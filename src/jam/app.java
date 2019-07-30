@@ -1,6 +1,5 @@
 package jam;
 
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -38,13 +37,13 @@ import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.wb.swt.SWTResourceManager;
 
 public class app {
-	
-	
-	private static GridData griddatatree,griddatabrowser,griddatatoolbar;
+
+	private static GridData griddatatree, griddatabrowser, griddatatoolbar;
 	private static Text txtDir;
 	private static Text txtName;
 	private static Text txtText;
 	private static Text txtOutput;
+
 	static void createMenuItem(Menu parent, final TreeColumn column) {
 		final MenuItem itemName = new MenuItem(parent, SWT.CHECK);
 		itemName.addListener(SWT.Selection, event -> {
@@ -56,140 +55,135 @@ public class app {
 				column.setResizable(false);
 			}
 		});
-	}/*
-	public static void displayFiles(String[] files) {
-		  for (int i = 0; files != null && i < files.length; i++) {
-		  txtDir.setText(files[i]);
-		  txtDir.setEditable(true);
-		  }
-		}*/
-	 protected static String loadPage(URL helppageUrl) {
-	        String str = null;
-	       try {
-	          InputStream is = helppageUrl.openStream();
-	          InputStreamReader r = new InputStreamReader(is);
-	          char[] buffer = new char[32];
-	          StringBuffer sb = new StringBuffer();
-	          int count;
-	          while ((count = r.read(buffer, 0, buffer.length)) > -1) {
-	            sb.append(buffer, 0, count);
-	          }
-	          str = sb.toString();
-	          is.close();
-	          r.close();
-	        } catch (IOException ex) {
-	          str = "Failed to load text";
-	        }
-	         return str;
-	    }
+	}
 
+	protected static String loadPage(URL helppageUrl) {
+		String str = null;
+		try {
+			InputStream is = helppageUrl.openStream();
+			InputStreamReader r = new InputStreamReader(is);
+			char[] buffer = new char[32];
+			StringBuffer sb = new StringBuffer();
+			int count;
+			while ((count = r.read(buffer, 0, buffer.length)) > -1) {
+				sb.append(buffer, 0, count);
+			}
+			str = sb.toString();
+			is.close();
+			r.close();
+		} catch (IOException ex) {
+			str = "Failed to load text";
+		}
+		return str;
+	}
+     
 	/**
 	 * Launch the application.
+	 * 
 	 * @param args
 	 */
 	public static void main(String[] args) throws IOException {
-		
-		//Инициализация окна приложения
+
+		// Инициализация окна приложения
 		Display display = Display.getDefault();
 		Shell shell = new Shell();
 		shell.setSize(764, 560);
 		shell.setText("JAM - Java Appdata Manager");
 		shell.setLayout(null);
-		//RGB color = shell.getBackground().getRGB();
-		
-		//Инициализация вкладок
+		// RGB color = shell.getBackground().getRGB();
+
+		// Инициализация вкладок
 		CTabFolder tabFolder_1 = new CTabFolder(shell, SWT.BORDER);
 		tabFolder_1.setBounds(0, 0, 738, 511);
-		tabFolder_1.setSelectionBackground(Display.getCurrent().getSystemColor(SWT.COLOR_TITLE_INACTIVE_BACKGROUND_GRADIENT));
-		
-		//Инициализация первой вкладки
+		tabFolder_1.setSelectionBackground(
+				Display.getCurrent().getSystemColor(SWT.COLOR_TITLE_INACTIVE_BACKGROUND_GRADIENT));
+
+		// Инициализация первой вкладки
 		CTabItem tbtmFirstTab = new CTabItem(tabFolder_1, SWT.NONE);
 		tbtmFirstTab.setText("First tab");
-		
+		// Инициализация страницы вкладки
 		Composite composite = new Composite(tabFolder_1, SWT.NONE);
 		tbtmFirstTab.setControl(composite);
 		composite.setLayout(null);
-		
+
 		Label lblDirectory = new Label(composite, SWT.NONE);
 		lblDirectory.setBounds(10, 10, 79, 15);
 		lblDirectory.setText("Directory");
-		
+
 		txtDir = new Text(composite, SWT.BORDER);
 		txtDir.setBounds(91, 7, 401, 21);
 		txtDir.setText("C:\\");
-		
+
 		Label lblFileName = new Label(composite, SWT.NONE);
 		lblFileName.setBounds(10, 34, 55, 15);
 		lblFileName.setText("File name");
-		
+
 		txtName = new Text(composite, SWT.BORDER);
 		txtName.setBounds(91, 31, 401, 21);
 		txtName.setText("*.log");
-		
+
 		Label lblSearchText = new Label(composite, SWT.NONE);
 		lblSearchText.setBounds(10, 60, 79, 15);
 		lblSearchText.setText("Search text");
-		
+
 		txtText = new Text(composite, SWT.BORDER);
 		txtText.setBounds(91, 58, 401, 21);
-		
+
 		Button btnSearch = new Button(composite, SWT.NONE);
 		btnSearch.setBounds(500, 55, 75, 25);
 		btnSearch.setText("Search");
 		btnSearch.addSelectionListener(new SelectionAdapter() {
-			  public void widgetSelected(SelectionEvent e1) {
-				  
-				  double count = 0,countBuffer=0,countLine=0;
-				    String lineNumber = "";
-				    String filePath = txtDir.getText();
-				    BufferedReader br;
-				    String inputSearch = txtText.getText();
-				    String line = "";
-				    
-				  try {
-				        br = new BufferedReader(new FileReader(filePath));
-				        try {
-				            while((line = br.readLine()) != null)
-				            {
-				                countLine++;
-				                System.out.println(line);
-				                String[] words = line.split(" ");
+			public void widgetSelected(SelectionEvent e1) {
 
-				                for (String word : words) {
-				                  if (word.equals(inputSearch)) {
-				                    count++;
-				                    countBuffer++;
-				                  }
-				                }
+				double count = 0, countBuffer = 0, countLine = 0;
+				String lineNumber = "";
+				String filePath = txtDir.getText();
+				BufferedReader br;
+				String inputSearch = txtText.getText();
+				String line = "";
 
-				                if(countBuffer > 0)
-				                {
-				                    countBuffer = 0;
-				                    lineNumber += countLine + ",";
-				                }
+				try {
+					br = new BufferedReader(new FileReader(filePath));
+					try {
+						while ((line = br.readLine()) != null) {
+							countLine++;
+							System.out.println(line);
+							String[] words = line.split(" ");
 
-				            }
-				            br.close();
-				        } catch (IOException e11) {
-				            // TODO Auto-generated catch block
-				            e11.printStackTrace();
-				        }
-				    } catch (FileNotFoundException e11) {
-				        // TODO Auto-generated catch block
-				        e11.printStackTrace();
-				    }
+							for (String word : words) {
+								if (word.equals(inputSearch)) {
+									count++;
+									countBuffer++;
+								}
+							}
 
-				    System.out.println("Times found at--"+count);
-				    System.out.println("Word found at--"+lineNumber);
-				   	
-			  }
-			});
-		
+							if (countBuffer > 0) {
+								countBuffer = 0;
+								lineNumber += countLine + ",";
+							}
+
+						}
+						br.close();
+					} catch (IOException e11) {
+						// TODO Auto-generated catch block
+						e11.printStackTrace();
+					}
+				} catch (FileNotFoundException e11) {
+					// TODO Auto-generated catch block
+					e11.printStackTrace();
+				}
+
+				System.out.println("Times found at--" + count);
+				System.out.println("Word found at--" + lineNumber);
+
+			}
+		});
+
 		Button btnClear = new Button(composite, SWT.NONE);
 		btnClear.setBounds(578, 55, 75, 25);
 		btnClear.setText("Clear");
 
-		final Tree tree = new Tree(composite, SWT.V_SCROLL|SWT.H_SCROLL| SWT.BORDER);
+		final Tree tree = new Tree(composite, SWT.V_SCROLL | SWT.H_SCROLL | SWT.BORDER);
 		tree.setBounds(10, 95, 285, 381);
 		tree.setHeaderVisible(true);
 		final Menu headerMenu = new Menu(shell, SWT.POP_UP);
@@ -205,14 +199,9 @@ public class app {
 		columnType.setText("Type");
 		columnType.setWidth(74);
 		createMenuItem(headerMenu, columnType);
-		
-		txtOutput = new Text(composite, SWT.BORDER 
-				  | SWT.READ_ONLY 
-				  | SWT.WRAP
-		          | SWT.MULTI
-		          | SWT.BORDER
-		          | SWT.H_SCROLL
-		          | SWT.V_SCROLL);
+
+		txtOutput = new Text(composite,
+				SWT.BORDER | SWT.READ_ONLY | SWT.WRAP | SWT.MULTI | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
 		txtOutput.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
 		txtOutput.setBounds(301, 95, 421, 381);
 
@@ -231,71 +220,90 @@ public class app {
 		new MenuItem(treeMenu, SWT.SEPARATOR);
 		item = new MenuItem(treeMenu, SWT.PUSH);
 		item.setText("Delete");
-		
-		File [] roots = File.listRoots ();
-		  for (int i=0; i<roots.length; i++) {
-		    TreeItem root = new TreeItem (tree, 0);
-		    root.setText (roots [i].toString ());
-		    root.setData (roots [i]);
-		    new TreeItem (root, 0);
-		  }
-		
-	    tree.addListener(SWT.Expand, new Listener() {
-	        public void handleEvent(final Event event) {
-	        	
-	        	 final TreeItem root = (TreeItem) event.item;
-	             TreeItem [] items = root.getItems ();
-	             for (int i= 0; i<items.length; i++) {
-	               if (items [i].getData () != null) return;
-	               items [i].dispose ();
-	             }
-	             File file = (File) root.getData ();
-	             File [] files = file.listFiles ();
-	             if (files == null) return;
-	             for (int i= 0; i<files.length; i++) {
-	               TreeItem item = new TreeItem (root, 0);
-	               item.setText (files [i].getName ());
-	               item.setData (files [i]);
-	               if (files [i].isDirectory()) {
-	                 new TreeItem (item, 0);
-	               }
-	             }
-	        }
-	      });
-	    tree.addListener(SWT.Selection, new Listener() {
-	        public void handleEvent(Event e1)  {
-	        	BufferedReader br1;
-	        	String filePath = txtDir.getText();
-	        	String line = "";
-	        	
-	        	TreeItem item = (TreeItem) e1.item;
-	        	File file = (File) item.getData ();
 
-	        	String content;
+		File[] roots = File.listRoots();
+		for (int i = 0; i < roots.length; i++) {
+			TreeItem root = new TreeItem(tree, 0);
+			root.setText(roots[i].toString());
+			root.setData(roots[i]);
+			new TreeItem(root, 0);
+		}
+
+		tree.addListener(SWT.Expand, new Listener() {
+			public void handleEvent(final Event event) {
+
+				final TreeItem root = (TreeItem) event.item;
+				TreeItem[] items = root.getItems();
+				for (int i = 0; i < items.length; i++) {
+					if (items[i].getData() != null)
+						return;
+					items[i].dispose();
+				}
+				File file = (File) root.getData();
+				File[] files = file.listFiles();
+				if (files == null)
+					return;
+				for (int i = 0; i < files.length; i++) {
+					TreeItem item = new TreeItem(root, 0);
+					item.setText(files[i].getName());
+					item.setData(files[i]);
+					if (files[i].isDirectory()) {
+						new TreeItem(item, 0);
+					}
+				}
+			}
+		});
+		tree.addListener(SWT.Selection, new Listener() {
+			public void handleEvent(Event e1) {
+				BufferedReader br1;
+				String filePath = txtDir.getText();
+				String line = "";
+
+				TreeItem item = (TreeItem) e1.item;
+				File file = (File) item.getData();
+
+				String content;
 				try {
-					if (file.isDirectory()) 
-			            return;
-					content = Files.lines(Paths.get(filePath)).reduce("",(a,b) -> a + "" + b + "\n");
+					if (file.isDirectory())
+						return;
+					if(file.getName().contains(".txt") || file.getName().contains(".log")) {
+					content = Files.lines(Paths.get(filePath)).reduce("", (a, b) -> a + "" + b + "\n");
 					txtOutput.setText(content);
+					}else {
+						return;
+					}
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-	        }
-	      });
-	    
-	      tree.addListener(SWT.Selection, new Listener() {
-	        public void handleEvent(Event e) {
-	          TreeItem item = (TreeItem) e.item;
-	          if (item == null)
-	            return;
-	          final File root = (File) item.getData();
-	          txtDir.getText();
-	          txtDir.setText(root.getAbsolutePath());
-	          txtDir.setText(root.getAbsolutePath());
-	        }
-	      });
+			}
+		});
 
+		tree.addListener(SWT.Selection, new Listener() {
+			public void handleEvent(Event e) {
+				final TreeItem root = (TreeItem) e.item;
+				TreeItem[] items = root.getItems();
+				File file = (File) root.getData();
+				if (file.isDirectory()) {
+					return;
+				}else{
+				txtName.setText(file.getName());
+				txtName.setText(file.getName());
+				}
+			}
+		});
+		
+		tree.addListener(SWT.Selection, new Listener() {
+			public void handleEvent(Event e) {
+				TreeItem item = (TreeItem) e.item;
+				if (item == null)
+					return;
+				final File root = (File) item.getData();
+				txtDir.getText();
+				txtDir.setText(root.getAbsolutePath());
+				txtDir.setText(root.getAbsolutePath());
+			}
+		});
 
 		shell.open();
 		shell.layout();
