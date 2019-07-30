@@ -289,6 +289,7 @@ public class app {
 				}else{
 				txtName.setText(file.getName());
 				txtName.setText(file.getName());
+				//goto
 				}
 			}
 		});
