@@ -2,11 +2,13 @@ package jam;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.RandomAccessFile;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
@@ -38,11 +40,69 @@ import org.eclipse.wb.swt.SWTResourceManager;
 
 public class app {
 
-	private static GridData griddatatree, griddatabrowser, griddatatoolbar;
 	private static Text txtDir;
 	private static Text txtName;
 	private static Text txtText;
 	private static Text txtOutput;
+	private RandomAccessFile file;
+	private String filePath = txtDir.getText();
+	private static app worker;
+
+	
+	
+	public app(String filePath) {
+        this.filePath = filePath;
+    }
+	
+    public long goTo(int num) throws IOException {
+        // инициализируем класс RandomAccessFile 
+        // в параметры передаем путь к файлу 
+        // и модификатор который говорит, что файл откроется только для чтения
+        file = new RandomAccessFile(filePath, "r");
+
+        // переходим на num символ
+        file.seek(num);
+
+        // получаем текущее состояние курсора в файле
+        long pointer = file.getFilePointer();
+        file.close();
+
+        return pointer;
+    }
+
+	 public String read() throws IOException {
+	        file = new RandomAccessFile(filePath, "r");
+	        String res = "";
+	        int b = file.read();
+	        // побитово читаем символы и плюсуем их в строку
+	        while(b != -1){
+	            res = res + (char)b;
+	            b = file.read();
+	        }
+	        file.close();
+
+	        return res;
+	    }
+	 
+	 public String readFrom(int numberSymbol) throws IOException {
+	        // открываем файл для чтения
+	        file = new RandomAccessFile(filePath, "r");
+	        String res = "";
+
+	        // ставим указатель на нужный вам символ
+	        file.seek(numberSymbol);
+	        int b = file.read();
+
+	        // побитово читаем и добавляем символы в строку
+	        while(b != -1){
+	            res = res + (char)b;
+
+	            b = file.read();
+	        }
+	        file.close();
+
+	        return res;
+	    }
 
 	static void createMenuItem(Menu parent, final TreeColumn column) {
 		final MenuItem itemName = new MenuItem(parent, SWT.CHECK);
@@ -57,32 +117,15 @@ public class app {
 		});
 	}
 
-	protected static String loadPage(URL helppageUrl) {
-		String str = null;
-		try {
-			InputStream is = helppageUrl.openStream();
-			InputStreamReader r = new InputStreamReader(is);
-			char[] buffer = new char[32];
-			StringBuffer sb = new StringBuffer();
-			int count;
-			while ((count = r.read(buffer, 0, buffer.length)) > -1) {
-				sb.append(buffer, 0, count);
-			}
-			str = sb.toString();
-			is.close();
-			r.close();
-		} catch (IOException ex) {
-			str = "Failed to load text";
-		}
-		return str;
-	}
-     
 	/**
 	 * Launch the application.
 	 * 
 	 * @param args
 	 */
 	public static void main(String[] args) throws IOException {
+		
+		//String searchWord = txtText.getText();
+		//FileInputStream fis = new FileInputStream(new File(txtDir.getText()));
 
 		// Инициализация окна приложения
 		Display display = Display.getDefault();
@@ -132,9 +175,42 @@ public class app {
 		Button btnSearch = new Button(composite, SWT.NONE);
 		btnSearch.setBounds(500, 55, 75, 25);
 		btnSearch.setText("Search");
-		btnSearch.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(SelectionEvent e1) {
-
+		btnSearch.addListener(SWT.Selection, new Listener()
+		{
+		    @Override
+		    public void handleEvent(Event event)
+		    {
+		    	String searchWord = txtText.getText();
+				FileInputStream fis;
+				try {
+					fis = new FileInputStream(new File(txtDir.getText()));
+					byte[] content = new byte[fis.available()];
+					fis.read(content);
+			        fis.close();
+			        String[] lines = new String(content, "Cp1251").split("\n"); // кодировку указать нужную
+			        int i = 1;
+			        for (String line : lines) {
+			            String[] words = line.split(" ");
+			            int j = 1;
+			            for (String word : words) {
+			                if (word.equalsIgnoreCase(searchWord)) {
+			                    System.out.println("Найдено в " + i + "-й строке, " + j + "-е слово");
+			                }
+			                j++;
+			            }
+			            i++;
+			        }
+				} catch (FileNotFoundException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+		    }
+		});
+		
+				/*
 				double count = 0, countBuffer = 0, countLine = 0;
 				String lineNumber = "";
 				String filePath = txtDir.getText();
@@ -175,9 +251,7 @@ public class app {
 
 				System.out.println("Times found at--" + count);
 				System.out.println("Word found at--" + lineNumber);
-
-			}
-		});
+			*/
 
 		Button btnClear = new Button(composite, SWT.NONE);
 		btnClear.setBounds(578, 55, 75, 25);
@@ -255,10 +329,7 @@ public class app {
 		});
 		tree.addListener(SWT.Selection, new Listener() {
 			public void handleEvent(Event e1) {
-				BufferedReader br1;
 				String filePath = txtDir.getText();
-				String line = "";
-
 				TreeItem item = (TreeItem) e1.item;
 				File file = (File) item.getData();
 
@@ -281,15 +352,14 @@ public class app {
 
 		tree.addListener(SWT.Selection, new Listener() {
 			public void handleEvent(Event e) {
+				
 				final TreeItem root = (TreeItem) e.item;
-				TreeItem[] items = root.getItems();
 				File file = (File) root.getData();
 				if (file.isDirectory()) {
 					return;
 				}else{
 				txtName.setText(file.getName());
 				txtName.setText(file.getName());
-				//goto
 				}
 			}
 		});
