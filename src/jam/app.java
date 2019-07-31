@@ -22,6 +22,7 @@ import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
@@ -194,7 +195,7 @@ public class app {
 			*/
 
 		Button btnClear = new Button(composite, SWT.NONE);
-		btnClear.setBounds(630, 5, 75, 25);
+		btnClear.setBounds(631, 5, 75, 25);
 		btnClear.setText("Clear");
 		btnClear.addSelectionListener(new SelectionAdapter() {
         	 
@@ -234,6 +235,14 @@ public class app {
 		Button btnAll = new Button(composite, SWT.NONE);
 		btnAll.setBounds(579, 55, 75, 25);
 		btnAll.setText("All");
+		btnAll.addListener(SWT.Selection, new Listener()
+		{
+		    @Override
+		    public void handleEvent(Event event)
+		    {
+		    	txtOutput.selectAll();
+		    }
+		});
 		
 		Button btnPrevious = new Button(composite, SWT.NONE);
 		btnPrevious.setBounds(660, 55, 75, 25);
