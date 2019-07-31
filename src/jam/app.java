@@ -89,11 +89,11 @@ public class app {
 		tbtmFirstTab.setControl(composite);
 		composite.setLayout(null);
 
-		Label lblDirectory = new Label(composite, SWT.NONE);
+		Label lblDirectory = new Label(composite, SWT.NONE );
 		lblDirectory.setBounds(10, 10, 79, 15);
 		lblDirectory.setText("Directory");
 
-		txtDir = new Text(composite, SWT.BORDER);
+		txtDir = new Text(composite, SWT.BORDER | SWT.WRAP);
 		txtDir.setBounds(91, 7, 401, 21);
 		txtDir.setText("C:\\");
 
@@ -112,7 +112,7 @@ public class app {
 		txtText = new Text(composite, SWT.BORDER);
 		txtText.setBounds(91, 58, 401, 21);
 
-		Button btnSearch = new Button(composite, SWT.NONE);
+		Button btnSearch = new Button(composite, SWT.NONE | SWT.WRAP);
 		btnSearch.setBounds(500, 55, 75, 25);
 		btnSearch.setText("Search");
 		btnSearch.addListener(SWT.Selection, new Listener()
@@ -196,6 +196,14 @@ public class app {
 		Button btnClear = new Button(composite, SWT.NONE);
 		btnClear.setBounds(578, 55, 75, 25);
 		btnClear.setText("Clear");
+		btnClear.addSelectionListener(new SelectionAdapter() {
+        	 
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                txtText.setText("");
+                txtText.forceFocus();
+            }
+        });
 
 		final Tree tree = new Tree(composite, SWT.V_SCROLL | SWT.H_SCROLL | SWT.BORDER);
 		tree.setBounds(10, 95, 285, 381);
