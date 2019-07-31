@@ -46,64 +46,7 @@ public class app {
 	private static Text txtOutput;
 	private RandomAccessFile file;
 	private String filePath = txtDir.getText();
-	private static app worker;
-
 	
-	
-	public app(String filePath) {
-        this.filePath = filePath;
-    }
-	
-    public long goTo(int num) throws IOException {
-        // инициализируем класс RandomAccessFile 
-        // в параметры передаем путь к файлу 
-        // и модификатор который говорит, что файл откроется только для чтения
-        file = new RandomAccessFile(filePath, "r");
-
-        // переходим на num символ
-        file.seek(num);
-
-        // получаем текущее состояние курсора в файле
-        long pointer = file.getFilePointer();
-        file.close();
-
-        return pointer;
-    }
-
-	 public String read() throws IOException {
-	        file = new RandomAccessFile(filePath, "r");
-	        String res = "";
-	        int b = file.read();
-	        // побитово читаем символы и плюсуем их в строку
-	        while(b != -1){
-	            res = res + (char)b;
-	            b = file.read();
-	        }
-	        file.close();
-
-	        return res;
-	    }
-	 
-	 public String readFrom(int numberSymbol) throws IOException {
-	        // открываем файл для чтения
-	        file = new RandomAccessFile(filePath, "r");
-	        String res = "";
-
-	        // ставим указатель на нужный вам символ
-	        file.seek(numberSymbol);
-	        int b = file.read();
-
-	        // побитово читаем и добавляем символы в строку
-	        while(b != -1){
-	            res = res + (char)b;
-
-	            b = file.read();
-	        }
-	        file.close();
-
-	        return res;
-	    }
-
 	static void createMenuItem(Menu parent, final TreeColumn column) {
 		final MenuItem itemName = new MenuItem(parent, SWT.CHECK);
 		itemName.addListener(SWT.Selection, event -> {
@@ -123,9 +66,6 @@ public class app {
 	 * @param args
 	 */
 	public static void main(String[] args) throws IOException {
-		
-		//String searchWord = txtText.getText();
-		//FileInputStream fis = new FileInputStream(new File(txtDir.getText()));
 
 		// Инициализация окна приложения
 		Display display = Display.getDefault();
