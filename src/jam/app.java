@@ -70,14 +70,14 @@ public class app {
 		// Инициализация окна приложения
 		Display display = Display.getDefault();
 		Shell shell = new Shell();
-		shell.setSize(764, 560);
+		shell.setSize(800, 560);
 		shell.setText("JAM - Java Appdata Manager");
 		shell.setLayout(null);
 		// RGB color = shell.getBackground().getRGB();
 
 		// Инициализация вкладок
 		CTabFolder tabFolder_1 = new CTabFolder(shell, SWT.BORDER);
-		tabFolder_1.setBounds(0, 0, 738, 511);
+		tabFolder_1.setBounds(0, 0, 774, 511);
 		tabFolder_1.setSelectionBackground(
 				Display.getCurrent().getSystemColor(SWT.COLOR_TITLE_INACTIVE_BACKGROUND_GRADIENT));
 
@@ -113,7 +113,7 @@ public class app {
 		txtText.setBounds(91, 58, 401, 21);
 
 		Button btnSearch = new Button(composite, SWT.NONE | SWT.WRAP);
-		btnSearch.setBounds(500, 55, 75, 25);
+		btnSearch.setBounds(536, 5, 75, 25);
 		btnSearch.setText("Search");
 		btnSearch.addListener(SWT.Selection, new Listener()
 		{
@@ -194,7 +194,7 @@ public class app {
 			*/
 
 		Button btnClear = new Button(composite, SWT.NONE);
-		btnClear.setBounds(578, 55, 75, 25);
+		btnClear.setBounds(630, 5, 75, 25);
 		btnClear.setText("Clear");
 		btnClear.addSelectionListener(new SelectionAdapter() {
         	 
@@ -225,7 +225,19 @@ public class app {
 		txtOutput = new Text(composite,
 				SWT.BORDER | SWT.READ_ONLY | SWT.WRAP | SWT.MULTI | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
 		txtOutput.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
-		txtOutput.setBounds(301, 95, 421, 381);
+		txtOutput.setBounds(301, 95, 457, 381);
+		
+		Button btnNext = new Button(composite, SWT.NONE);
+		btnNext.setBounds(498, 55, 75, 25);
+		btnNext.setText("Next");
+		
+		Button btnAll = new Button(composite, SWT.NONE);
+		btnAll.setBounds(579, 55, 75, 25);
+		btnAll.setText("All");
+		
+		Button btnPrevious = new Button(composite, SWT.NONE);
+		btnPrevious.setBounds(660, 55, 75, 25);
+		btnPrevious.setText("Previous");
 
 		final Menu treeMenu = new Menu(shell, SWT.POP_UP);
 		MenuItem item = new MenuItem(treeMenu, SWT.PUSH);
