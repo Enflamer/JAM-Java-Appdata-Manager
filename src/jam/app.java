@@ -1,27 +1,31 @@
 package jam;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.RandomAccessFile;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Optional;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.StringTokenizer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import javax.swing.text.Document;
+
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
+import org.eclipse.swt.custom.LineStyleEvent;
+import org.eclipse.swt.custom.LineStyleListener;
+import org.eclipse.swt.custom.StyleRange;
+import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
@@ -45,8 +49,14 @@ public class app {
 	private static Text txtName;
 	private static Text txtText;
 	private static Text txtOutput;
-	private RandomAccessFile file;
-	private String filePath = txtDir.getText();
+	//private RandomAccessFile file;
+    //private String filePath = txtDir.getText();
+	
+	static Display display = new Display();
+	static Shell shell = new Shell(display);
+
+	static StyledText styledText;
+	static String keyword;
 	
 	static void createMenuItem(Menu parent, final TreeColumn column) {
 		final MenuItem itemName = new MenuItem(parent, SWT.CHECK);
@@ -60,17 +70,38 @@ public class app {
 			}
 		});
 	}
+	
+	  private static StyleRange getHighlightStyle(int startOffset, int length) {
+		    StyleRange styleRange = new StyleRange();
+		    styleRange.start = startOffset;
+		    styleRange.length = length;
+		    styleRange.background = shell.getDisplay().getSystemColor(SWT.COLOR_YELLOW);
+		    return styleRange;
+		  }
+	/*
+	private static void setSelection(Text text, String query)
+	{
+		String comboText = text.getText();
+	    int index = comboText.indexOf(query);
 
+	    if(index != -1)
+	        text.setSelection(new Point(index, index + query.length()));
+	}*/
+	
 	/**
 	 * Launch the application.
 	 * 
 	 * @param args
 	 */
 	public static void main(String[] args) throws IOException {
+		
+
+		
+		LinkedList<String> searchList = new LinkedList<String>();
+		LinkedList<Integer> wordList = new LinkedList<Integer>();
+		LinkedList<Integer> spaceList = new LinkedList<Integer>();
 
 		// Инициализация окна приложения
-		Display display = Display.getDefault();
-		Shell shell = new Shell();
 		shell.setSize(800, 560);
 		shell.setText("JAM - Java Appdata Manager");
 		shell.setLayout(null);
@@ -120,8 +151,45 @@ public class app {
 		{
 		    @Override
 		    public void handleEvent(Event event)
-		    {
-		    	String searchWord = txtText.getText();
+		    {	
+		    	String searchText = txtOutput.getText();
+		    	int sizeOfWord = 0;
+		    	List<String> tokens = new ArrayList<String>();
+		    	tokens.add(txtText.getText());
+		    	String patternString = "\\b(" + StringUtils.join(tokens, "|") + ")\\b";
+
+		    	
+		    	Pattern pattern = Pattern.compile(patternString);
+		    	Matcher matcher = pattern.matcher(searchText);
+
+		    	while (matcher.find()) {
+		    	    System.out.println(matcher.group(1));
+		    	    wordList.add(matcher.end());
+		    	}
+		    	
+		    	
+		    	
+		    	for (int i = 0; i < wordList.size(); i++) {
+		    		System.out.println(wordList.get(i));
+		    	}
+		    	
+		    	
+		    	
+		    	
+		    	
+		    	
+		    	
+		    	
+		    	
+		    	
+		    	
+		    	
+		    	
+		    	
+		    	
+		    	
+		    	
+		    	/*
 				FileInputStream fis;
 				try {
 					fis = new FileInputStream(new File(txtDir.getText()));
@@ -135,9 +203,15 @@ public class app {
 			            int j = 1;
 			            for (String word : words) {
 			                if (word.equalsIgnoreCase(searchWord)) {
-			                    System.out.println("Найдено в " + i + "-й строке, " + j + "-е слово");
+			                	wordList.add(j);
+			                	//System.out.println(word.lastIndexOf(word));
+
+			                	
+			                	//txtOutput.setSelection(j);
+			                    System.out.println("Найдено " + j + "-е слово");
 			                }
 			                j++;
+			                //searchList3.add(txtOutput.getText().lastIndexOf(j-1));
 			            }
 			            i++;
 			        }
@@ -148,6 +222,31 @@ public class app {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
+				//for (int k = 1; k < wordList.size();k++) {
+				//	spaceList.add(txtOutput.getText().lastIndexOf(k-1));
+		    	//}
+				spaceList.add(0);
+				String allText = txtOutput.getText();
+				System.out.println(allText);
+				String[] words = allText.split("\\s+");
+				String s = "p";
+				for(int i=0; i< allText.length(); i++){
+			        if(allText.charAt(i) == ' ') spaceList.add(i);
+			    }
+				spaceList.add(spaceList.get(spaceList.size()-1));
+				//String[] arr = allText.split("");
+				//for (int k = 1; k < allText.length();k++) {
+					//boolean isWhitespace = allText.matches("^\\s*$");
+					//int index = allText.indexOf(" ");
+					//spaceList.add(index);
+
+		  
+		    	//}
+				//spaceList.add(spaceList.indexOf(spaceList.size()));
+				for(int i=0; i< spaceList.size(); i++){
+					System.out.println(spaceList.get(i));
+			    }*/
+
 		    }
 		});
 		
@@ -222,11 +321,38 @@ public class app {
 		columnType.setText("Type");
 		columnType.setWidth(74);
 		createMenuItem(headerMenu, columnType);
-
+	    GridData gridData = new GridData(GridData.FILL_BOTH);
+	    gridData.horizontalSpan = 2;    
+		
+		styledText = new StyledText(composite, SWT.MULTI | SWT.READ_ONLY | SWT.WRAP | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
+		styledText.setLocation(301, 95);
+		styledText.setSize(457, 233);
+		styledText.setLayoutData(gridData);
+		
+		styledText.addLineStyleListener(new LineStyleListener() {
+		      public void lineGetStyle(LineStyleEvent event) {
+		        if(keyword == null || keyword.length() == 0) {
+		          event.styles = new StyleRange[0];
+		          return;
+		        }
+		        
+		        String line = event.lineText;
+		        int cursor = -1;
+		        
+		        LinkedList<StyleRange> list = new LinkedList<StyleRange>();
+		        while( (cursor = line.indexOf(keyword, cursor+1)) >= 0) {
+		          list.add(getHighlightStyle(event.lineOffset+cursor, keyword.length()));
+		        }
+		        
+		        event.styles = (StyleRange[]) list.toArray(new StyleRange[list.size()]);
+		      }
+		    });
+		
+	    
 		txtOutput = new Text(composite,
 				SWT.BORDER | SWT.READ_ONLY | SWT.WRAP | SWT.MULTI | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
 		txtOutput.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
-		txtOutput.setBounds(301, 95, 457, 381);
+		txtOutput.setBounds(301, 334, 457, 142);
 		
 		Button btnNext = new Button(composite, SWT.NONE);
 		btnNext.setBounds(498, 55, 75, 25);
@@ -237,16 +363,33 @@ public class app {
 		btnAll.setText("All");
 		btnAll.addListener(SWT.Selection, new Listener()
 		{
+
 		    @Override
 		    public void handleEvent(Event event)
 		    {
-		    	txtOutput.selectAll();
+
+		    	//String searchText = txtOutput.getText();
+		    	//String wordToFind = txtText.getText();
+		    	keyword = txtText.getText();
+		        styledText.redraw();
+		        	//System.out.println(searchList.get(j));
+		    	
+		    	
+		    	
+		    	/*
+		    	for (int j = 0; j < searchList.size();j++) {
+		        	int index = txtOutput.getText().indexOf(searchList.get(j));
+		        	txtOutput.setSelection(new Point(index, index + searchList.get(j).length()));
+		        	System.out.println(searchList.get(j));
+		    	}*/
 		    }
 		});
+        
 		
 		Button btnPrevious = new Button(composite, SWT.NONE);
 		btnPrevious.setBounds(660, 55, 75, 25);
 		btnPrevious.setText("Previous");
+		
 
 		final Menu treeMenu = new Menu(shell, SWT.POP_UP);
 		MenuItem item = new MenuItem(treeMenu, SWT.PUSH);
@@ -308,7 +451,7 @@ public class app {
 						return;
 					if(file.getName().contains(".txt") || file.getName().contains(".log")) {
 					content = Files.lines(Paths.get(filePath)).reduce("", (a, b) -> a + "" + b + "\n");
-					txtOutput.setText(content);
+					styledText.setText(content);
 					}else {
 						return;
 					}
