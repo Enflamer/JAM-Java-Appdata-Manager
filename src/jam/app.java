@@ -78,16 +78,7 @@ public class app {
 		    styleRange.background = shell.getDisplay().getSystemColor(SWT.COLOR_YELLOW);
 		    return styleRange;
 		  }
-	/*
-	private static void setSelection(Text text, String query)
-	{
-		String comboText = text.getText();
-	    int index = comboText.indexOf(query);
-
-	    if(index != -1)
-	        text.setSelection(new Point(index, index + query.length()));
-	}*/
-	
+	  
 	/**
 	 * Launch the application.
 	 * 
@@ -97,26 +88,22 @@ public class app {
 		
 
 		
-		LinkedList<String> searchList = new LinkedList<String>();
+		//LinkedList<String> searchList = new LinkedList<String>();
 		LinkedList<Integer> wordList = new LinkedList<Integer>();
-		LinkedList<Integer> spaceList = new LinkedList<Integer>();
+		//LinkedList<Integer> spaceList = new LinkedList<Integer>();
 
-		// Инициализация окна приложения
 		shell.setSize(800, 560);
 		shell.setText("JAM - Java Appdata Manager");
 		shell.setLayout(null);
-		// RGB color = shell.getBackground().getRGB();
 
-		// Инициализация вкладок
 		CTabFolder tabFolder_1 = new CTabFolder(shell, SWT.BORDER);
 		tabFolder_1.setBounds(0, 0, 774, 511);
 		tabFolder_1.setSelectionBackground(
 				Display.getCurrent().getSystemColor(SWT.COLOR_TITLE_INACTIVE_BACKGROUND_GRADIENT));
 
-		// Инициализация первой вкладки
 		CTabItem tbtmFirstTab = new CTabItem(tabFolder_1, SWT.NONE);
 		tbtmFirstTab.setText("First tab");
-		// Инициализация страницы вкладки
+
 		Composite composite = new Composite(tabFolder_1, SWT.NONE);
 		tbtmFirstTab.setControl(composite);
 		composite.setLayout(null);
@@ -172,126 +159,8 @@ public class app {
 		    	for (int i = 0; i < wordList.size(); i++) {
 		    		System.out.println(wordList.get(i));
 		    	}
-		    	
-		    	
-		    	
-		    	
-		    	
-		    	
-		    	
-		    	
-		    	
-		    	
-		    	
-		    	
-		    	
-		    	
-		    	
-		    	
-		    	
-		    	/*
-				FileInputStream fis;
-				try {
-					fis = new FileInputStream(new File(txtDir.getText()));
-					byte[] content = new byte[fis.available()];
-					fis.read(content);
-			        fis.close();
-			        String[] lines = new String(content, "Cp1251").split("\n"); // кодировку указать нужную
-			        int i = 1;
-			        for (String line : lines) {
-			            String[] words = line.split(" ");
-			            int j = 1;
-			            for (String word : words) {
-			                if (word.equalsIgnoreCase(searchWord)) {
-			                	wordList.add(j);
-			                	//System.out.println(word.lastIndexOf(word));
-
-			                	
-			                	//txtOutput.setSelection(j);
-			                    System.out.println("Найдено " + j + "-е слово");
-			                }
-			                j++;
-			                //searchList3.add(txtOutput.getText().lastIndexOf(j-1));
-			            }
-			            i++;
-			        }
-				} catch (FileNotFoundException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				//for (int k = 1; k < wordList.size();k++) {
-				//	spaceList.add(txtOutput.getText().lastIndexOf(k-1));
-		    	//}
-				spaceList.add(0);
-				String allText = txtOutput.getText();
-				System.out.println(allText);
-				String[] words = allText.split("\\s+");
-				String s = "p";
-				for(int i=0; i< allText.length(); i++){
-			        if(allText.charAt(i) == ' ') spaceList.add(i);
-			    }
-				spaceList.add(spaceList.get(spaceList.size()-1));
-				//String[] arr = allText.split("");
-				//for (int k = 1; k < allText.length();k++) {
-					//boolean isWhitespace = allText.matches("^\\s*$");
-					//int index = allText.indexOf(" ");
-					//spaceList.add(index);
-
-		  
-		    	//}
-				//spaceList.add(spaceList.indexOf(spaceList.size()));
-				for(int i=0; i< spaceList.size(); i++){
-					System.out.println(spaceList.get(i));
-			    }*/
-
 		    }
 		});
-		
-				/*
-				double count = 0, countBuffer = 0, countLine = 0;
-				String lineNumber = "";
-				String filePath = txtDir.getText();
-				BufferedReader br;
-				String inputSearch = txtText.getText();
-				String line = "";
-
-				try {
-					br = new BufferedReader(new FileReader(filePath));
-					try {
-						while ((line = br.readLine()) != null) {
-							countLine++;
-							System.out.println(line);
-							String[] words = line.split(" ");
-
-							for (String word : words) {
-								if (word.equals(inputSearch)) {
-									count++;
-									countBuffer++;
-								}
-							}
-
-							if (countBuffer > 0) {
-								countBuffer = 0;
-								lineNumber += countLine + ",";
-							}
-
-						}
-						br.close();
-					} catch (IOException e11) {
-						// TODO Auto-generated catch block
-						e11.printStackTrace();
-					}
-				} catch (FileNotFoundException e11) {
-					// TODO Auto-generated catch block
-					e11.printStackTrace();
-				}
-
-				System.out.println("Times found at--" + count);
-				System.out.println("Word found at--" + lineNumber);
-			*/
 
 		Button btnClear = new Button(composite, SWT.NONE);
 		btnClear.setBounds(631, 5, 75, 25);
@@ -367,21 +236,8 @@ public class app {
 		    @Override
 		    public void handleEvent(Event event)
 		    {
-
-		    	//String searchText = txtOutput.getText();
-		    	//String wordToFind = txtText.getText();
 		    	keyword = txtText.getText();
 		        styledText.redraw();
-		        	//System.out.println(searchList.get(j));
-		    	
-		    	
-		    	
-		    	/*
-		    	for (int j = 0; j < searchList.size();j++) {
-		        	int index = txtOutput.getText().indexOf(searchList.get(j));
-		        	txtOutput.setSelection(new Point(index, index + searchList.get(j).length()));
-		        	System.out.println(searchList.get(j));
-		    	}*/
 		    }
 		});
         
