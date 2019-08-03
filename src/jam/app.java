@@ -4,17 +4,23 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Scanner;
 import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import javax.swing.text.Document;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
@@ -48,7 +54,6 @@ public class app {
 	private static Text txtDir;
 	private static Text txtName;
 	private static Text txtText;
-	private static Text txtOutput;
 	//private RandomAccessFile file;
     //private String filePath = txtDir.getText();
 	
@@ -69,6 +74,19 @@ public class app {
 				column.setResizable(false);
 			}
 		});
+	}
+	private static String readLineByLine(String filePath)
+	{
+	    StringBuilder contentBuilder = new StringBuilder();
+	    try (Stream<String> stream = Files.lines( Paths.get(filePath), StandardCharsets.UTF_8))
+	    {
+	        stream.forEach(s -> contentBuilder.append(s).append("\n"));
+	    }
+	    catch (IOException e)
+	    {
+	        e.printStackTrace();
+	    }
+	    return contentBuilder.toString();
 	}
 	
 	  private static StyleRange getHighlightStyle(int startOffset, int length) {
@@ -107,74 +125,8 @@ public class app {
 		Composite composite = new Composite(tabFolder_1, SWT.NONE);
 		tbtmFirstTab.setControl(composite);
 		composite.setLayout(null);
-
-		Label lblDirectory = new Label(composite, SWT.NONE );
-		lblDirectory.setBounds(10, 10, 79, 15);
-		lblDirectory.setText("Directory");
-
-		txtDir = new Text(composite, SWT.BORDER | SWT.WRAP);
-		txtDir.setBounds(91, 7, 401, 21);
-		txtDir.setText("C:\\");
-
-		Label lblFileName = new Label(composite, SWT.NONE);
-		lblFileName.setBounds(10, 34, 55, 15);
-		lblFileName.setText("File name");
-
-		txtName = new Text(composite, SWT.BORDER);
-		txtName.setBounds(91, 31, 401, 21);
-		txtName.setText("*.log");
-
-		Label lblSearchText = new Label(composite, SWT.NONE);
-		lblSearchText.setBounds(10, 60, 79, 15);
-		lblSearchText.setText("Search text");
-
-		txtText = new Text(composite, SWT.BORDER);
-		txtText.setBounds(91, 58, 401, 21);
-
-		Button btnSearch = new Button(composite, SWT.NONE | SWT.WRAP);
-		btnSearch.setBounds(536, 5, 75, 25);
-		btnSearch.setText("Search");
-		btnSearch.addListener(SWT.Selection, new Listener()
-		{
-		    @Override
-		    public void handleEvent(Event event)
-		    {	
-		    	String searchText = txtOutput.getText();
-		    	int sizeOfWord = 0;
-		    	List<String> tokens = new ArrayList<String>();
-		    	tokens.add(txtText.getText());
-		    	String patternString = "\\b(" + StringUtils.join(tokens, "|") + ")\\b";
-
-		    	
-		    	Pattern pattern = Pattern.compile(patternString);
-		    	Matcher matcher = pattern.matcher(searchText);
-
-		    	while (matcher.find()) {
-		    	    System.out.println(matcher.group(1));
-		    	    wordList.add(matcher.end());
-		    	}
-		    	
-		    	
-		    	
-		    	for (int i = 0; i < wordList.size(); i++) {
-		    		System.out.println(wordList.get(i));
-		    	}
-		    }
-		});
-
-		Button btnClear = new Button(composite, SWT.NONE);
-		btnClear.setBounds(631, 5, 75, 25);
-		btnClear.setText("Clear");
-		btnClear.addSelectionListener(new SelectionAdapter() {
-        	 
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                txtText.setText("");
-                txtText.forceFocus();
-            }
-        });
-
-		final Tree tree = new Tree(composite, SWT.V_SCROLL | SWT.H_SCROLL | SWT.BORDER);
+		
+		final Tree tree = new Tree(composite, SWT.V_SCROLL | SWT.H_SCROLL | SWT.BORDER | SWT.VIRTUAL);
 		tree.setBounds(10, 95, 285, 381);
 		tree.setHeaderVisible(true);
 		final Menu headerMenu = new Menu(shell, SWT.POP_UP);
@@ -192,10 +144,110 @@ public class app {
 		createMenuItem(headerMenu, columnType);
 	    GridData gridData = new GridData(GridData.FILL_BOTH);
 	    gridData.horizontalSpan = 2;    
+
+		Label lblDirectory = new Label(composite, SWT.NONE );
+		lblDirectory.setBounds(10, 10, 79, 15);
+		lblDirectory.setText("Directory");
+
+		txtDir = new Text(composite, SWT.BORDER | SWT.WRAP);
+		txtDir.setBounds(91, 7, 401, 21);
+		txtDir.setText("C:\\");
+
+		Label lblFileName = new Label(composite, SWT.NONE);
+		lblFileName.setBounds(10, 34, 55, 15);
+		lblFileName.setText("File name");
+
+		txtName = new Text(composite, SWT.BORDER);
+		txtName.setBounds(91, 31, 401, 21);
+		txtName.setText(".log");
+
+		Label lblSearchText = new Label(composite, SWT.NONE);
+		lblSearchText.setBounds(10, 60, 79, 15);
+		lblSearchText.setText("Search text");
+
+		txtText = new Text(composite, SWT.BORDER);
+		txtText.setBounds(91, 58, 401, 21);
+
+		Button btnSearch = new Button(composite, SWT.NONE | SWT.WRAP);
+		btnSearch.setBounds(536, 5, 75, 25);
+		btnSearch.setText("Search");
+		btnSearch.addListener(SWT.Selection, new Listener()
+		{
+		    @Override
+		    public void handleEvent(Event event)
+		    {	
+		    	StringBuilder contentBuilder = new StringBuilder();
+		    	String searchText = txtText.getText();
+		    	String dirPath = txtDir.getText();
+		    	File file = new File(dirPath);
+		    	File [] files = file.listFiles();
+		    	    	
+		    	if(!file.isDirectory()) {
+		    		return;
+		    	}else {
+		    		try (Stream<Path> paths = Files.walk(Paths.get(dirPath))) {
+		    		    paths
+		    		        .filter(p -> p.toString().endsWith(txtName.getText()))
+		    		        .forEach(path -> {
+		    	                try {
+		    	                	String content = new String(Files.readAllBytes(path));
+		    	                	//boolean containsContent = true;
+		    	                	if(searchText!=null && !content.contains(searchText)) {
+		    	                		System.out.println(path);
+		    	                	}else{
+		    	                		return;
+		    	                	}
+		    	                        //containsContent = false;
+		    	                } catch (IOException e) {
+		    	                    throw new UncheckedIOException(e);
+		    	                }
+		    	            });
+		    		} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+		    	}
+		    	
+		    	/*
+		    	String searchText = txtText.getText();
+		    	//int sizeOfWord = 0;
+		    	List<String> tokens = new ArrayList<String>();
+		    	tokens.add(txtText.getText());
+		    	String patternString = "\\b(" + StringUtils.join(tokens, "|") + ")\\b";
+
+		    	
+		    	Pattern pattern = Pattern.compile(patternString);
+		    	Matcher matcher = pattern.matcher(searchText);
+		    	
+		    	for(int i = 0; i < files.length; )
+		    	while (matcher.find()) {
+		    		
+		    	}
+		    	
+		    	
+		    	
+		    	for (int i = 0; i < wordList.size(); i++) {
+		    		System.out.println(wordList.get(i));
+		    	}*/
+		    }
+		});
+
+		Button btnClear = new Button(composite, SWT.NONE);
+		btnClear.setBounds(631, 5, 75, 25);
+		btnClear.setText("Clear");
+		btnClear.addSelectionListener(new SelectionAdapter() {
+        	 
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                txtText.setText("");
+                txtText.forceFocus();
+                tree.clearAll(true);
+            }
+        });
 		
 		styledText = new StyledText(composite, SWT.MULTI | SWT.READ_ONLY | SWT.WRAP | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
 		styledText.setLocation(301, 95);
-		styledText.setSize(457, 233);
+		styledText.setSize(457, 381);
 		styledText.setLayoutData(gridData);
 		
 		styledText.addLineStyleListener(new LineStyleListener() {
@@ -217,15 +269,19 @@ public class app {
 		      }
 		    });
 		
-	    
-		txtOutput = new Text(composite,
-				SWT.BORDER | SWT.READ_ONLY | SWT.WRAP | SWT.MULTI | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
-		txtOutput.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
-		txtOutput.setBounds(301, 334, 457, 142);
-		
 		Button btnNext = new Button(composite, SWT.NONE);
 		btnNext.setBounds(498, 55, 75, 25);
 		btnNext.setText("Next");
+		btnNext.addListener(SWT.Selection, new Listener()
+		{
+
+		    @Override
+		    public void handleEvent(Event event)
+		    {
+		    	keyword = txtText.getText();
+		        styledText.redraw();
+		    }
+		});
 		
 		Button btnAll = new Button(composite, SWT.NONE);
 		btnAll.setBounds(579, 55, 75, 25);
@@ -246,7 +302,7 @@ public class app {
 		btnPrevious.setBounds(660, 55, 75, 25);
 		btnPrevious.setText("Previous");
 		
-
+		/*
 		final Menu treeMenu = new Menu(shell, SWT.POP_UP);
 		MenuItem item = new MenuItem(treeMenu, SWT.PUSH);
 		item.setText("Open");
@@ -262,7 +318,8 @@ public class app {
 		new MenuItem(treeMenu, SWT.SEPARATOR);
 		item = new MenuItem(treeMenu, SWT.PUSH);
 		item.setText("Delete");
-
+		*/
+		
 		File[] roots = File.listRoots();
 		for (int i = 0; i < roots.length; i++) {
 			TreeItem root = new TreeItem(tree, 0);
@@ -270,7 +327,7 @@ public class app {
 			root.setData(roots[i]);
 			new TreeItem(root, 0);
 		}
-
+		
 		tree.addListener(SWT.Expand, new Listener() {
 			public void handleEvent(final Event event) {
 
@@ -317,7 +374,7 @@ public class app {
 				}
 			}
 		});
-
+		/*
 		tree.addListener(SWT.Selection, new Listener() {
 			public void handleEvent(Event e) {
 				
@@ -331,7 +388,7 @@ public class app {
 				}
 			}
 		});
-		
+		*/
 		tree.addListener(SWT.Selection, new Listener() {
 			public void handleEvent(Event e) {
 				TreeItem item = (TreeItem) e.item;
@@ -339,8 +396,8 @@ public class app {
 					return;
 				final File root = (File) item.getData();
 				txtDir.getText();
-				txtDir.setText(root.getAbsolutePath());
-				txtDir.setText(root.getAbsolutePath());
+				txtDir.setText(root.getPath());
+				txtDir.setText(root.getPath());
 			}
 		});
 
