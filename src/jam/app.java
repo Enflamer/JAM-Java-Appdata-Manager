@@ -176,28 +176,26 @@ public class app {
 		    @Override
 		    public void handleEvent(Event event)
 		    {	
-		    	StringBuilder contentBuilder = new StringBuilder();
+		    	//StringBuilder contentBuilder = new StringBuilder();
 		    	String searchText = txtText.getText();
 		    	String dirPath = txtDir.getText();
 		    	File file = new File(dirPath);
-		    	File [] files = file.listFiles();
+		    	//File [] files = file.listFiles();
 		    	    	
-		    	if(!file.isDirectory()) {
-		    		return;
-		    	}else {
+		    	//if(!file.isDirectory()) {
+		    		//return;
+		    	//}else {
 		    		try (Stream<Path> paths = Files.walk(Paths.get(dirPath))) {
 		    		    paths
 		    		        .filter(p -> p.toString().endsWith(txtName.getText()))
 		    		        .forEach(path -> {
 		    	                try {
 		    	                	String content = new String(Files.readAllBytes(path));
-		    	                	//boolean containsContent = true;
 		    	                	if(searchText!=null && !content.contains(searchText)) {
 		    	                		System.out.println(path);
 		    	                	}else{
 		    	                		return;
 		    	                	}
-		    	                        //containsContent = false;
 		    	                } catch (IOException e) {
 		    	                    throw new UncheckedIOException(e);
 		    	                }
@@ -206,29 +204,7 @@ public class app {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
-		    	}
-		    	
-		    	/*
-		    	String searchText = txtText.getText();
-		    	//int sizeOfWord = 0;
-		    	List<String> tokens = new ArrayList<String>();
-		    	tokens.add(txtText.getText());
-		    	String patternString = "\\b(" + StringUtils.join(tokens, "|") + ")\\b";
-
-		    	
-		    	Pattern pattern = Pattern.compile(patternString);
-		    	Matcher matcher = pattern.matcher(searchText);
-		    	
-		    	for(int i = 0; i < files.length; )
-		    	while (matcher.find()) {
-		    		
-		    	}
-		    	
-		    	
-		    	
-		    	for (int i = 0; i < wordList.size(); i++) {
-		    		System.out.println(wordList.get(i));
-		    	}*/
+		    	//}
 		    }
 		});
 
