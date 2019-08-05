@@ -133,16 +133,10 @@ public class Application {
 		createMenuItem(headerMenu, columnType);
 		GridData gridData = new GridData(GridData.FILL_BOTH);
 		gridData.horizontalSpan = 2;
-		//-----------------First -------------------------------------------------
-		/*
-		File[] roots = File.listRoots();
-		for (int i = 0; i < roots.length; i++) {
-			TreeItem root = new TreeItem(tree, 0);
-			root.setText(roots[i].toString());
-			root.setData(roots[i]);
-			new TreeItem(root, 0);
-		}*/
+		
+		//-----------------First inicialization of tree-------------------------------------------------
 		getRootPath(tree);
+		
 		Label lblDirectory = new Label(composite, SWT.NONE);
 		lblDirectory.setBounds(10, 10, 80, 15);
 		lblDirectory.setText("Directory");
