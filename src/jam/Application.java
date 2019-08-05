@@ -54,6 +54,7 @@ public class Application {
 	private static Text txtDir;
 	private static Text txtName;
 	private static Text txtText;
+	//private static Tree tree;
 
 	static Display display = new Display();
 	static Shell shell = new Shell(display);
@@ -81,6 +82,15 @@ public class Application {
 		styleRange.background = shell.getDisplay().getSystemColor(SWT.COLOR_YELLOW);
 		return styleRange;
 	}
+	static void getRootPath(Tree tree) {
+		File[] roots = File.listRoots();
+		for (int i = 0; i < roots.length; i++) {
+			TreeItem root = new TreeItem(tree, 0);
+			root.setText(roots[i].toString());
+			root.setData(roots[i]);
+			new TreeItem(root, 0);
+		}
+	}
 
 	/**
 	 * Launch the application.
@@ -89,12 +99,12 @@ public class Application {
 	 */
 	public static void main(String[] args) throws IOException {
 
-		shell.setSize(800, 560);
+		shell.setSize(800, 580);
 		shell.setText("JAM - Java Appdata Manager");
 		shell.setLayout(null);
 
 		CTabFolder tabFolder_1 = new CTabFolder(shell, SWT.BORDER);
-		tabFolder_1.setBounds(5, 5, 775, 510);
+		tabFolder_1.setBounds(5, 5, 775, 526);
 		tabFolder_1.setSelectionBackground(
 				Display.getCurrent().getSystemColor(SWT.COLOR_TITLE_INACTIVE_BACKGROUND_GRADIENT));
 
@@ -123,7 +133,16 @@ public class Application {
 		createMenuItem(headerMenu, columnType);
 		GridData gridData = new GridData(GridData.FILL_BOTH);
 		gridData.horizontalSpan = 2;
-
+		//-----------------First -------------------------------------------------
+		/*
+		File[] roots = File.listRoots();
+		for (int i = 0; i < roots.length; i++) {
+			TreeItem root = new TreeItem(tree, 0);
+			root.setText(roots[i].toString());
+			root.setData(roots[i]);
+			new TreeItem(root, 0);
+		}*/
+		getRootPath(tree);
 		Label lblDirectory = new Label(composite, SWT.NONE);
 		lblDirectory.setBounds(10, 10, 80, 15);
 		lblDirectory.setText("Directory");
@@ -251,14 +270,6 @@ public class Application {
 		btnPrevious.setBounds(660, 55, 75, 25);
 		btnPrevious.setText("Previous");
 
-		File[] roots = File.listRoots();
-		for (int i = 0; i < roots.length; i++) {
-			TreeItem root = new TreeItem(tree, 0);
-			root.setText(roots[i].toString());
-			root.setData(roots[i]);
-			new TreeItem(root, 0);
-		}
-
 		tree.addListener(SWT.Expand, new Listener() {
 			public void handleEvent(final Event event) {
 
@@ -285,30 +296,6 @@ public class Application {
 		});
 		tree.addListener(SWT.Selection, new Listener() {
 			public void handleEvent(Event e1) {
-				/*
-				 * String searchText = txtText.getText(); String dirPath = txtDir.getText();
-				 * TreeItem item = (TreeItem) e1.item; File file = (File) item.getData();
-				 * 
-				 * if (file.isDirectory()) { return; } else { try (Stream<Path> paths =
-				 * Files.walk(Paths.get(dirPath))) { paths.filter(p ->
-				 * p.toString().endsWith(txtName.getText())).forEach(path -> { try { String
-				 * content = new String(Files.readAllBytes(path)); styledText.setText(content);
-				 * 
-				 * // content = Files.lines(Paths.get(filePath)).reduce("", (a, b) -> a + "" + b
-				 * + // "\n")
-				 * 
-				 * /* if (searchText != null && content.contains(searchText)) { try { TreeItem
-				 * dir = new TreeItem(tree, 0); dir.setText(path.toFile().toString());
-				 * dir.setData(path); new TreeItem(dir, 0); } catch (Exception e) { // if any
-				 * error occurs e.printStackTrace(); }
-				 * 
-				 * 
-				 * } catch (IOException e) { throw new UncheckedIOException(e); } }); } catch
-				 * (IOException e) { e.printStackTrace();
-				 * 
-				 * }
-				 */
-
 				String filePath = txtDir.getText();
 
 				TreeItem item = (TreeItem) e1.item;
