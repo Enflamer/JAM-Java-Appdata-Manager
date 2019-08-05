@@ -54,7 +54,7 @@ public class Application {
 	private static Text txtDir;
 	private static Text txtName;
 	private static Text txtText;
-	//private static Tree tree;
+	// private static Tree tree;
 
 	static Display display = new Display();
 	static Shell shell = new Shell(display);
@@ -82,6 +82,7 @@ public class Application {
 		styleRange.background = shell.getDisplay().getSystemColor(SWT.COLOR_YELLOW);
 		return styleRange;
 	}
+
 	static void getRootPath(Tree tree) {
 		File[] roots = File.listRoots();
 		for (int i = 0; i < roots.length; i++) {
@@ -98,7 +99,8 @@ public class Application {
 	 * @param args
 	 */
 	public static void main(String[] args) throws IOException {
-
+		
+		// -----------------Layout initialization-----------------------------------------
 		shell.setSize(800, 580);
 		shell.setText("JAM - Java Appdata Manager");
 		shell.setLayout(null);
@@ -115,6 +117,7 @@ public class Application {
 		tbtmFirstTab.setControl(composite);
 		composite.setLayout(null);
 
+		// -----------------First initialization of tree-----------------------------------------
 		final Tree tree = new Tree(composite, SWT.V_SCROLL | SWT.H_SCROLL | SWT.BORDER | SWT.VIRTUAL);
 		tree.setBounds(10, 95, 285, 380);
 		tree.setHeaderVisible(true);
@@ -133,10 +136,11 @@ public class Application {
 		createMenuItem(headerMenu, columnType);
 		GridData gridData = new GridData(GridData.FILL_BOTH);
 		gridData.horizontalSpan = 2;
-		
-		//-----------------First inicialization of tree-------------------------------------------------
+
+		// -----------------First tree filling-------------------------------------------
 		getRootPath(tree);
 		
+		// -----------------Buttons and labels init------------------------------------------
 		Label lblDirectory = new Label(composite, SWT.NONE);
 		lblDirectory.setBounds(10, 10, 80, 15);
 		lblDirectory.setText("Directory");
@@ -210,7 +214,37 @@ public class Application {
 				tree.clearAll(true);
 			}
 		});
+		
+		Button btnNext = new Button(composite, SWT.NONE);
+		btnNext.setBounds(500, 55, 75, 25);
+		btnNext.setText("Next");
+		btnNext.addListener(SWT.Selection, new Listener() {
 
+			@Override
+			public void handleEvent(Event event) {
+				keyword = txtText.getText();
+				styledText.redraw();
+			}
+		});
+		
+
+		Button btnAll = new Button(composite, SWT.NONE);
+		btnAll.setBounds(580, 55, 75, 25);
+		btnAll.setText("All");
+		btnAll.addListener(SWT.Selection, new Listener() {
+
+			@Override
+			public void handleEvent(Event event) {
+				keyword = txtText.getText();
+				styledText.redraw();
+			}
+		});
+
+		Button btnPrevious = new Button(composite, SWT.NONE);
+		btnPrevious.setBounds(660, 55, 75, 25);
+		btnPrevious.setText("Previous");
+		
+		// -----------------Output area init------------------------------------------
 		styledText = new StyledText(composite,
 				SWT.MULTI | SWT.READ_ONLY | SWT.WRAP | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
 		styledText.setLocation(300, 95);
@@ -236,34 +270,7 @@ public class Application {
 			}
 		});
 
-		Button btnNext = new Button(composite, SWT.NONE);
-		btnNext.setBounds(500, 55, 75, 25);
-		btnNext.setText("Next");
-		btnNext.addListener(SWT.Selection, new Listener() {
-
-			@Override
-			public void handleEvent(Event event) {
-				keyword = txtText.getText();
-				styledText.redraw();
-			}
-		});
-
-		Button btnAll = new Button(composite, SWT.NONE);
-		btnAll.setBounds(580, 55, 75, 25);
-		btnAll.setText("All");
-		btnAll.addListener(SWT.Selection, new Listener() {
-
-			@Override
-			public void handleEvent(Event event) {
-				keyword = txtText.getText();
-				styledText.redraw();
-			}
-		});
-
-		Button btnPrevious = new Button(composite, SWT.NONE);
-		btnPrevious.setBounds(660, 55, 75, 25);
-		btnPrevious.setText("Previous");
-
+		// -----------------Tree listeners------------------------------------------
 		tree.addListener(SWT.Expand, new Listener() {
 			public void handleEvent(final Event event) {
 
