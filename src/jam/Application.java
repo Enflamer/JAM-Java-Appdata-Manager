@@ -49,12 +49,11 @@ import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.wb.swt.SWTResourceManager;
 
-public class app {
+public class Application {
 
 	private static Text txtDir;
 	private static Text txtName;
 	private static Text txtText;
-
 
 	static Display display = new Display();
 	static Shell shell = new Shell(display);
@@ -166,16 +165,14 @@ public class app {
 								try {
 									TreeItem dir = new TreeItem(tree, 0);
 									dir.setText(path.toFile().toString());
-									dir.setData(path);
+									dir.setData(path.toFile());
 									new TreeItem(dir, 0);
 								} catch (Exception e) {
 									// if any error occurs
 									e.printStackTrace();
 								}
 
-							}
-
-							else {
+							} else {
 								return;
 							}
 						} catch (IOException e) {
@@ -288,8 +285,32 @@ public class app {
 		});
 		tree.addListener(SWT.Selection, new Listener() {
 			public void handleEvent(Event e1) {
+				/*
+				 * String searchText = txtText.getText(); String dirPath = txtDir.getText();
+				 * TreeItem item = (TreeItem) e1.item; File file = (File) item.getData();
+				 * 
+				 * if (file.isDirectory()) { return; } else { try (Stream<Path> paths =
+				 * Files.walk(Paths.get(dirPath))) { paths.filter(p ->
+				 * p.toString().endsWith(txtName.getText())).forEach(path -> { try { String
+				 * content = new String(Files.readAllBytes(path)); styledText.setText(content);
+				 * 
+				 * // content = Files.lines(Paths.get(filePath)).reduce("", (a, b) -> a + "" + b
+				 * + // "\n")
+				 * 
+				 * /* if (searchText != null && content.contains(searchText)) { try { TreeItem
+				 * dir = new TreeItem(tree, 0); dir.setText(path.toFile().toString());
+				 * dir.setData(path); new TreeItem(dir, 0); } catch (Exception e) { // if any
+				 * error occurs e.printStackTrace(); }
+				 * 
+				 * 
+				 * } catch (IOException e) { throw new UncheckedIOException(e); } }); } catch
+				 * (IOException e) { e.printStackTrace();
+				 * 
+				 * }
+				 */
 
 				String filePath = txtDir.getText();
+
 				TreeItem item = (TreeItem) e1.item;
 				File file = (File) item.getData();
 
@@ -303,9 +324,8 @@ public class app {
 					} else {
 						return;
 					}
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+				} catch (IOException e) { // TODO Auto-generated catch block e.printStackTrace(); }
+
 				}
 			}
 		});
