@@ -1,66 +1,54 @@
 package jam;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.ArrayList;
 import java.util.LinkedList;
-import java.util.List;
-import java.util.Scanner;
-import java.util.StringTokenizer;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.ListIterator;
+import java.util.Vector;
 import java.util.stream.Stream;
 
-import javax.swing.text.Document;
-
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.CTabFolder;
-import org.eclipse.swt.custom.CTabItem;
-import org.eclipse.swt.custom.LineStyleEvent;
-import org.eclipse.swt.custom.LineStyleListener;
-import org.eclipse.swt.custom.StyleRange;
-import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.custom.*;
+import org.eclipse.swt.events.KeyAdapter;
+import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.VerifyEvent;
+import org.eclipse.swt.events.VerifyListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Listener;
-import org.eclipse.swt.widgets.Menu;
-import org.eclipse.swt.widgets.MenuItem;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Text;
-import org.eclipse.swt.widgets.Tree;
-import org.eclipse.swt.widgets.TreeColumn;
-import org.eclipse.swt.widgets.TreeItem;
-import org.eclipse.wb.swt.SWTResourceManager;
+import org.eclipse.swt.widgets.*;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
+
+import org.eclipse.swt.custom.StyleRange;
+import org.eclipse.swt.custom.StyledText;
+
+import util.WordIndexer;
+import util.WordIndexerWrapper;
 
 public class Application {
 
+	
 	private static Text txtDir;
 	private static Text txtName;
 	private static Text txtText;
-	// private static Tree tree;
-
+	private static int selected = 0;
 	static Display display = new Display();
 	static Shell shell = new Shell(display);
-
-	static StyledText styledText;
+	private StyledText styledText;
 	static String keyword;
+	private ArrayList<Integer> listOfCords = new ArrayList<Integer>();
 
 	static void createMenuItem(Menu parent, final TreeColumn column) {
 		final MenuItem itemName = new MenuItem(parent, SWT.CHECK);
@@ -92,15 +80,23 @@ public class Application {
 			new TreeItem(root, 0);
 		}
 	}
-
-	/**
-	 * Launch the application.
-	 * 
-	 * @param args
-	 */
-	public static void main(String[] args) throws IOException {
+	private int highLighting(StyledText tv, String keyword, int selected) {
+		if (selected < 0) {
+			selected = 0;
+		}
 		
-		// -----------------Layout initialization-----------------------------------------
+		StyleRange styleRange = new StyleRange();
+		styleRange.start = listOfCords.get(selected);
+		styleRange.length = styleRange.start + keyword.length();
+		styleRange.background = styledText.getDisplay().getSystemColor(SWT.COLOR_YELLOW);
+		styledText.setSelection(listOfCords.get(selected), listOfCords.get(selected) + keyword.length());
+		styledText.setStyleRange(styleRange);
+
+		return selected;
+	}
+	
+	Application(){
+
 		shell.setSize(800, 580);
 		shell.setText("JAM - Java Appdata Manager");
 		shell.setLayout(null);
@@ -112,35 +108,30 @@ public class Application {
 
 		CTabItem tbtmFirstTab = new CTabItem(tabFolder_1, SWT.NONE);
 		tbtmFirstTab.setText("First tab");
-
+		
 		Composite composite = new Composite(tabFolder_1, SWT.NONE);
 		tbtmFirstTab.setControl(composite);
 		composite.setLayout(null);
 
-		// -----------------First initialization of tree-----------------------------------------
+		// -----------------First initialization of
+		// tree-----------------------------------------
 		final Tree tree = new Tree(composite, SWT.V_SCROLL | SWT.H_SCROLL | SWT.BORDER | SWT.VIRTUAL);
 		tree.setBounds(10, 95, 285, 380);
 		tree.setHeaderVisible(true);
 		final Menu headerMenu = new Menu(shell, SWT.POP_UP);
 		final TreeColumn columnName = new TreeColumn(tree, SWT.NONE);
 		columnName.setText("Name");
-		columnName.setWidth(150);
+		columnName.setWidth(283);
 		createMenuItem(headerMenu, columnName);
-		final TreeColumn columnSize = new TreeColumn(tree, SWT.NONE);
-		columnSize.setText("Size");
-		columnSize.setWidth(60);
-		createMenuItem(headerMenu, columnSize);
-		final TreeColumn columnType = new TreeColumn(tree, SWT.NONE);
-		columnType.setText("Type");
-		columnType.setWidth(75);
-		createMenuItem(headerMenu, columnType);
 		GridData gridData = new GridData(GridData.FILL_BOTH);
 		gridData.horizontalSpan = 2;
 
-		// -----------------First tree filling-------------------------------------------
+		// -----------------First tree
+		// filling-------------------------------------------
 		getRootPath(tree);
-		
-		// -----------------Buttons and labels init------------------------------------------
+
+		// -----------------Buttons and labels
+		// init------------------------------------------
 		Label lblDirectory = new Label(composite, SWT.NONE);
 		lblDirectory.setBounds(10, 10, 80, 15);
 		lblDirectory.setText("Directory");
@@ -201,6 +192,7 @@ public class Application {
 				}
 			}
 		});
+		
 
 		Button btnClear = new Button(composite, SWT.NONE);
 		btnClear.setBounds(630, 10, 75, 25);
@@ -209,24 +201,23 @@ public class Application {
 
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				txtText.setText("");
-				txtText.forceFocus();
-				tree.clearAll(true);
 			}
 		});
-		
+
+		// selected = changeTextView(styledText, txtText.getText(), selected);
+
 		Button btnNext = new Button(composite, SWT.NONE);
 		btnNext.setBounds(500, 55, 75, 25);
 		btnNext.setText("Next");
+		btnNext.setSelection(true);
 		btnNext.addListener(SWT.Selection, new Listener() {
 
 			@Override
 			public void handleEvent(Event event) {
-				keyword = txtText.getText();
-				styledText.redraw();
+				selected++;
+				selected = highLighting(styledText, txtText.getText(), selected);
 			}
 		});
-		
 
 		Button btnAll = new Button(composite, SWT.NONE);
 		btnAll.setBounds(580, 55, 75, 25);
@@ -243,13 +234,26 @@ public class Application {
 		Button btnPrevious = new Button(composite, SWT.NONE);
 		btnPrevious.setBounds(660, 55, 75, 25);
 		btnPrevious.setText("Previous");
-		
+		btnPrevious.addListener(SWT.Selection, new Listener() {
+
+			@Override
+			public void handleEvent(Event event) {
+				selected--;
+				selected = highLighting(styledText, txtText.getText(), selected);
+			}
+		});
+
+		Label lblWarningFileWill = new Label(composite, SWT.NONE);
+		lblWarningFileWill.setBounds(10, 481, 303, 15);
+		lblWarningFileWill.setText("Warning! File will open only if you double clicked on it.");
+
 		// -----------------Output area init------------------------------------------
 		styledText = new StyledText(composite,
 				SWT.MULTI | SWT.READ_ONLY | SWT.WRAP | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
 		styledText.setLocation(300, 95);
 		styledText.setSize(450, 380);
 		styledText.setLayoutData(gridData);
+		styledText.setKeyBinding(SWT.CTRL | SWT.ALT | SWT.RIGHT | SWT.PAGE_UP, SWT.NULL);
 
 		styledText.addLineStyleListener(new LineStyleListener() {
 			public void lineGetStyle(LineStyleEvent event) {
@@ -298,6 +302,7 @@ public class Application {
 		tree.addListener(SWT.Selection, new Listener() {
 			public void handleEvent(Event e1) {
 				String filePath = txtDir.getText();
+				String searchText = txtText.getText();
 
 				TreeItem item = (TreeItem) e1.item;
 				File file = (File) item.getData();
@@ -307,8 +312,29 @@ public class Application {
 					if (file.isDirectory())
 						return;
 					if (file.getName().contains(".txt") || file.getName().contains(".log")) {
+						listOfCords.clear();
 						content = Files.lines(Paths.get(filePath)).reduce("", (a, b) -> a + "" + b + "\n");
 						styledText.setText(content);
+						if(content.contains(searchText)) {
+							//listOfCords.clear();
+							String line = styledText.getText();
+							Matcher m = Pattern.compile(searchText + "\\b").matcher(line);
+							
+							while (m.find()) {
+								listOfCords.add(m.start());
+							}
+							/*
+							if (line.contains(word)) {
+							//while ((cursor = line.indexOf(searchText, cursor + 1)) >= 0) 
+							for (int i = 0; i < line.length(); i++){
+								listOfCords.add(line.indexOf(i));
+							}}else {
+								return;
+							}*/
+						}
+						styledText.setSelection(listOfCords.get(selected), listOfCords.get(selected) + searchText.length());
+						System.out.println(listOfCords);
+						
 					} else {
 						return;
 					}
@@ -338,4 +364,14 @@ public class Application {
 			}
 		}
 	}
-}
+
+	/**
+	 * Launch the application.
+	 * 
+	 * @param args
+	 * @return 
+	 */
+	public static  void main (String[] args) throws IOException {
+			new Application();
+		}
+	}
