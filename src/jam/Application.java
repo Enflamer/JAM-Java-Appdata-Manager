@@ -1,56 +1,50 @@
 package jam;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.RandomAccessFile;
 import java.io.UncheckedIOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
 import java.util.ArrayList;
 import java.util.LinkedList;
-import java.util.ListIterator;
-import java.util.Vector;
 import java.util.stream.Stream;
 
+import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.*;
-import org.eclipse.swt.events.KeyAdapter;
-import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.VerifyEvent;
-import org.eclipse.swt.events.VerifyListener;
-import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
-
 import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.custom.StyledText;
 
-import util.WordIndexer;
-import util.WordIndexerWrapper;
-
 public class Application {
 
-	
-	private static Text txtDir;
-	private static Text txtName;
-	private static Text txtText;
-	private static int selected = 0;
-	static Display display = new Display();
-	static Shell shell = new Shell(display);
+	private Text txtDir;
+	private Text txtName;
+	private Text txtText;
+	private int selected = 0;
+	private Display display = new Display();
+	private Shell shell = new Shell(display);
 	private StyledText styledText;
-	static String keyword;
+	private String keyword;
 	private ArrayList<Integer> listOfCords = new ArrayList<Integer>();
+	private Text txtTimer;
 
-	static void createMenuItem(Menu parent, final TreeColumn column) {
+	public void createMenuItem(Menu parent, final TreeColumn column) {
 		final MenuItem itemName = new MenuItem(parent, SWT.CHECK);
 		itemName.addListener(SWT.Selection, event -> {
 			if (itemName.getSelection()) {
@@ -63,7 +57,7 @@ public class Application {
 		});
 	}
 
-	private static StyleRange getHighlightStyle(int startOffset, int length) {
+	private StyleRange getHighlightStyle(int startOffset, int length) {
 		StyleRange styleRange = new StyleRange();
 		styleRange.start = startOffset;
 		styleRange.length = length;
@@ -71,7 +65,7 @@ public class Application {
 		return styleRange;
 	}
 
-	static void getRootPath(Tree tree) {
+	public void getRootPath(Tree tree) {
 		File[] roots = File.listRoots();
 		for (int i = 0; i < roots.length; i++) {
 			TreeItem root = new TreeItem(tree, 0);
@@ -80,22 +74,28 @@ public class Application {
 			new TreeItem(root, 0);
 		}
 	}
+
 	private int highLighting(StyledText tv, String keyword, int selected) {
 		if (selected < 0) {
 			selected = 0;
 		}
-		
-		StyleRange styleRange = new StyleRange();
-		styleRange.start = listOfCords.get(selected);
-		styleRange.length = styleRange.start + keyword.length();
-		styleRange.background = styledText.getDisplay().getSystemColor(SWT.COLOR_YELLOW);
 		styledText.setSelection(listOfCords.get(selected), listOfCords.get(selected) + keyword.length());
-		styledText.setStyleRange(styleRange);
-
 		return selected;
 	}
-	
-	Application(){
+
+	public String getFileContent(FileInputStream fis, String encoding) throws IOException {
+		try (BufferedReader br = new BufferedReader(new InputStreamReader(fis, encoding))) {
+			StringBuilder sb = new StringBuilder();
+			String line;
+			while ((line = br.readLine()) != null) {
+				sb.append(line);
+				sb.append('\n');
+			}
+			return sb.toString();
+		}
+	}
+
+	Application() {
 
 		shell.setSize(800, 580);
 		shell.setText("JAM - Java Appdata Manager");
@@ -108,7 +108,7 @@ public class Application {
 
 		CTabItem tbtmFirstTab = new CTabItem(tabFolder_1, SWT.NONE);
 		tbtmFirstTab.setText("First tab");
-		
+
 		Composite composite = new Composite(tabFolder_1, SWT.NONE);
 		tbtmFirstTab.setControl(composite);
 		composite.setLayout(null);
@@ -192,7 +192,6 @@ public class Application {
 				}
 			}
 		});
-		
 
 		Button btnClear = new Button(composite, SWT.NONE);
 		btnClear.setBounds(630, 10, 75, 25);
@@ -203,8 +202,6 @@ public class Application {
 			public void widgetSelected(SelectionEvent e) {
 			}
 		});
-
-		// selected = changeTextView(styledText, txtText.getText(), selected);
 
 		Button btnNext = new Button(composite, SWT.NONE);
 		btnNext.setBounds(500, 55, 75, 25);
@@ -247,14 +244,20 @@ public class Application {
 		lblWarningFileWill.setBounds(10, 481, 303, 15);
 		lblWarningFileWill.setText("Warning! File will open only if you double clicked on it.");
 
+		txtTimer = new Text(composite, SWT.READ_ONLY);
+		txtTimer.setBounds(579, 481, 156, 18);
+		
+		Label lblSearchTime = new Label(composite, SWT.NONE);
+		lblSearchTime.setBounds(513, 481, 75, 15);
+		lblSearchTime.setText("Search time:");
+		
 		// -----------------Output area init------------------------------------------
 		styledText = new StyledText(composite,
 				SWT.MULTI | SWT.READ_ONLY | SWT.WRAP | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
 		styledText.setLocation(300, 95);
 		styledText.setSize(450, 380);
 		styledText.setLayoutData(gridData);
-		styledText.setKeyBinding(SWT.CTRL | SWT.ALT | SWT.RIGHT | SWT.PAGE_UP, SWT.NULL);
-
+		
 		styledText.addLineStyleListener(new LineStyleListener() {
 			public void lineGetStyle(LineStyleEvent event) {
 				if (keyword == null || keyword.length() == 0) {
@@ -269,7 +272,6 @@ public class Application {
 				while ((cursor = line.indexOf(keyword, cursor + 1)) >= 0) {
 					list.add(getHighlightStyle(event.lineOffset + cursor, keyword.length()));
 				}
-
 				event.styles = (StyleRange[]) list.toArray(new StyleRange[list.size()]);
 			}
 		});
@@ -299,48 +301,75 @@ public class Application {
 				}
 			}
 		});
-		tree.addListener(SWT.Selection, new Listener() {
-			public void handleEvent(Event e1) {
-				String filePath = txtDir.getText();
-				String searchText = txtText.getText();
+		tree.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(final SelectionEvent e) {
+				Display.getDefault().asyncExec(new Runnable() {
+					@Override
+					public void run() {
+						//listOfCords.clear();
+						TreeItem item = (TreeItem) e.item;
+						File file = (File) item.getData();
+						String searchText = txtText.getText();
 
-				TreeItem item = (TreeItem) e1.item;
-				File file = (File) item.getData();
-
-				String content;
-				try {
-					if (file.isDirectory())
-						return;
-					if (file.getName().contains(".txt") || file.getName().contains(".log")) {
-						listOfCords.clear();
-						content = Files.lines(Paths.get(filePath)).reduce("", (a, b) -> a + "" + b + "\n");
-						styledText.setText(content);
-						if(content.contains(searchText)) {
-							//listOfCords.clear();
-							String line = styledText.getText();
-							Matcher m = Pattern.compile(searchText + "\\b").matcher(line);
-							
-							while (m.find()) {
-								listOfCords.add(m.start());
-							}
-							/*
-							if (line.contains(word)) {
-							//while ((cursor = line.indexOf(searchText, cursor + 1)) >= 0) 
-							for (int i = 0; i < line.length(); i++){
-								listOfCords.add(line.indexOf(i));
-							}}else {
-								return;
-							}*/
+						if (file.isDirectory()) {
+							return;
 						}
-						styledText.setSelection(listOfCords.get(selected), listOfCords.get(selected) + searchText.length());
-						System.out.println(listOfCords);
-						
-					} else {
-						return;
-					}
-				} catch (IOException e) { // TODO Auto-generated catch block e.printStackTrace(); }
+						long time1 = System.currentTimeMillis();
+						try (RandomAccessFile reader = new RandomAccessFile(file, "r");
+								FileChannel channel = reader.getChannel();
+								ByteArrayOutputStream out = new ByteArrayOutputStream()) {
 
-				}
+							int bufferSize = 1024;
+							if (bufferSize > channel.size()) {
+								bufferSize = (int) channel.size();
+							}
+
+							ByteBuffer buff = ByteBuffer.allocate(bufferSize);
+
+							while (channel.read(buff) > 0) {
+								buff.flip();
+								out.write(buff.array());
+								buff.clear();
+							}
+
+							String fileContent = new String(out.toByteArray(), StandardCharsets.UTF_8);
+							styledText.setText(fileContent);
+
+							if (searchText == "") {
+								return;
+							}
+							if (listOfCords.size() > 0) {
+								selected = 0;
+								listOfCords.clear();
+							}
+							if (fileContent.contains(searchText)) {
+
+								styledText.getText();
+								Matcher m = Pattern.compile(searchText + "\\b").matcher(fileContent);
+
+								while (m.find()) {
+									listOfCords.add(m.start());
+								}
+								styledText.setSelection(listOfCords.get(selected),
+										listOfCords.get(selected) + searchText.length());
+
+							}
+							// System.out.println(listOfCords);
+
+						} catch (FileNotFoundException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						} catch (IOException e2) {
+							// TODO Auto-generated catch block
+							e2.printStackTrace();
+						}
+						// styledText.setText(fileContent);
+						long time2 = System.currentTimeMillis();
+						txtTimer.setText((time2 - time1) + " ms");
+						// System.out.println("Time taken: " + (time2 - time1) + " ms");
+					}
+				});
 			}
 		});
 
@@ -369,9 +398,9 @@ public class Application {
 	 * Launch the application.
 	 * 
 	 * @param args
-	 * @return 
+	 * @return
 	 */
-	public static  void main (String[] args) throws IOException {
-			new Application();
-		}
+	public static void main(String[] args) throws IOException {
+		new Application();
 	}
+}
