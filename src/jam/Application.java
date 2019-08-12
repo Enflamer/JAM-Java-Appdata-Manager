@@ -1,11 +1,7 @@
 package jam;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.RandomAccessFile;
 import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
@@ -30,20 +26,33 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.custom.StyledText;
+import org.eclipse.wb.swt.SWTResourceManager;
+import org.eclipse.swt.layout.GridLayout;
 
 public class Application {
+	public Text txtDir, 
+				txtName, 
+				txtText, 
+				txtTimer;
+	public int selected = 0;
+	public Display display = new Display();
+	public Shell shell = new Shell(display, SWT.SHELL_TRIM & (~SWT.RESIZE));
+	public StyledText styledText;
+	public String keyword;
+	public ArrayList<Integer> listOfCords = new ArrayList<Integer>();
+	public Tree tree;
+	public Composite composite;
+	public CTabFolder tabFolder;
+	public Button btnSearch;
 
-	private Text txtDir;
-	private Text txtName;
-	private Text txtText;
-	private int selected = 0;
-	private Display display = new Display();
-	private Shell shell = new Shell(display);
-	private StyledText styledText;
-	private String keyword;
-	private ArrayList<Integer> listOfCords = new ArrayList<Integer>();
-	private Text txtTimer;
-
+	/**
+	 * Builds the new column viewer instance.
+	 *
+	 * @param parent
+	 *            the parent composite for the viewer.
+	 * @param column
+	 *           	 tree column.
+	 */
 	public void createMenuItem(Menu parent, final TreeColumn column) {
 		final MenuItem itemName = new MenuItem(parent, SWT.CHECK);
 		itemName.addListener(SWT.Selection, event -> {
@@ -56,7 +65,16 @@ public class Application {
 			}
 		});
 	}
-
+	
+	/**
+	 * Highlight text in yellow background color.
+	 *
+	 * @param startOffset
+	 *            start point of word to highlight.
+	 * @param length
+	 *            end point of word to highlight.
+	 * @return highlighted text.
+	 */
 	private StyleRange getHighlightStyle(int startOffset, int length) {
 		StyleRange styleRange = new StyleRange();
 		styleRange.start = startOffset;
@@ -64,7 +82,13 @@ public class Application {
 		styleRange.background = shell.getDisplay().getSystemColor(SWT.COLOR_YELLOW);
 		return styleRange;
 	}
-
+	
+	/**
+	 * Takes a root path in file system.
+	 *
+	 * @param tree
+	 *            file system tree.
+	 */
 	public void getRootPath(Tree tree) {
 		File[] roots = File.listRoots();
 		for (int i = 0; i < roots.length; i++) {
@@ -74,54 +98,98 @@ public class Application {
 			new TreeItem(root, 0);
 		}
 	}
-
+	
+	/**
+	 * System word highlighting by next and prev.
+	 *
+	 * @param tv
+	 *            swt text field.
+	 * @param keyword
+	 *            word to highlight.
+	 * @param selected
+	 *            pointer in list of witch word to highlight.
+	 * @return pointer.
+	 */
 	private int highLighting(StyledText tv, String keyword, int selected) {
 		if (selected < 0) {
 			selected = 0;
+		} else if (listOfCords.isEmpty()) {
+			return 0;
+		} else {
+			styledText.setSelection(listOfCords.get(selected), listOfCords.get(selected) + keyword.length());
 		}
-		styledText.setSelection(listOfCords.get(selected), listOfCords.get(selected) + keyword.length());
 		return selected;
 	}
 
-	public String getFileContent(FileInputStream fis, String encoding) throws IOException {
-		try (BufferedReader br = new BufferedReader(new InputStreamReader(fis, encoding))) {
-			StringBuilder sb = new StringBuilder();
-			String line;
-			while ((line = br.readLine()) != null) {
-				sb.append(line);
-				sb.append('\n');
+	/**
+	 * Convert all text in String.
+	 *
+	 * @param file
+	 *            file to read.
+	 * @return text String.
+	 */
+	public String getFileContent(File file) throws IOException {
+		if (file.isDirectory()) {
+			return "";
+		}
+		try (RandomAccessFile reader = new RandomAccessFile(file, "r");
+				FileChannel channel = reader.getChannel();
+				ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+
+			int bufferSize = 1024;
+			if (bufferSize > channel.size()) {
+				bufferSize = (int) channel.size();
 			}
-			return sb.toString();
+
+			ByteBuffer buff = ByteBuffer.allocate(bufferSize);
+
+			while (channel.read(buff) > 0) {
+				buff.flip();
+				out.write(buff.array());
+				buff.clear();
+			}
+
+			String fileContent = new String(out.toByteArray(), StandardCharsets.UTF_8);
+			return fileContent;
 		}
 	}
 
 	Application() {
-
-		shell.setSize(800, 580);
+		shell.setSize(800, 571);
 		shell.setText("JAM - Java Appdata Manager");
-		shell.setLayout(null);
+		shell.setLayout(new GridLayout(1, false));
 
-		CTabFolder tabFolder_1 = new CTabFolder(shell, SWT.BORDER);
-		tabFolder_1.setBounds(5, 5, 775, 526);
-		tabFolder_1.setSelectionBackground(
+		CTabFolder tabFolder = new CTabFolder(shell, SWT.BORDER | SWT.FLAT);
+		GridData gd_tabFolder = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
+		gd_tabFolder.widthHint = 789;
+		gd_tabFolder.heightHint = 538;
+		tabFolder.setLayoutData(gd_tabFolder);
+		tabFolder.setSelectionBackground(
 				Display.getCurrent().getSystemColor(SWT.COLOR_TITLE_INACTIVE_BACKGROUND_GRADIENT));
 
-		CTabItem tbtmFirstTab = new CTabItem(tabFolder_1, SWT.NONE);
-		tbtmFirstTab.setText("First tab");
+		CTabItem tbtmFirstTab = new CTabItem(tabFolder, SWT.NONE);
+		tbtmFirstTab.setFont(SWTResourceManager.getFont("Corbel", 12, SWT.NORMAL));
+		tbtmFirstTab.setText("Main tab");
 
-		Composite composite = new Composite(tabFolder_1, SWT.NONE);
+		Composite composite = new Composite(tabFolder, SWT.NONE);
 		tbtmFirstTab.setControl(composite);
 		composite.setLayout(null);
 
+		run(composite);
+		
+
+	}
+
+	public void run(Composite composite) {
 		// -----------------First initialization of
 		// tree-----------------------------------------
 		final Tree tree = new Tree(composite, SWT.V_SCROLL | SWT.H_SCROLL | SWT.BORDER | SWT.VIRTUAL);
 		tree.setBounds(10, 95, 285, 380);
 		tree.setHeaderVisible(true);
 		final Menu headerMenu = new Menu(shell, SWT.POP_UP);
-		final TreeColumn columnName = new TreeColumn(tree, SWT.NONE);
+		final TreeColumn columnName = new TreeColumn(tree, SWT.CENTER);
 		columnName.setText("Name");
-		columnName.setWidth(283);
+		columnName.setWidth(285);
 		createMenuItem(headerMenu, columnName);
 		GridData gridData = new GridData(GridData.FILL_BOTH);
 		gridData.horizontalSpan = 2;
@@ -132,39 +200,61 @@ public class Application {
 
 		// -----------------Buttons and labels
 		// init------------------------------------------
+		Label lblHighlighting = new Label(composite, SWT.CENTER);
+		lblHighlighting.setFont(SWTResourceManager.getFont("Corbel", 12, SWT.NORMAL));
+		lblHighlighting.setBounds(503, 37, 232, 19);
+		lblHighlighting.setText("Highlighting");
+		
+		Label labline = new Label(composite, SWT.SEPARATOR | SWT.HORIZONTAL);
+		labline.setBounds(496, 36, 263, 2);
+		Label labline2 = new Label(composite, SWT.SEPARATOR | SWT.VERTICAL);
+		labline2.setBounds(496, 36, 2, 58);
+		Label labline3 = new Label(composite, SWT.SEPARATOR);
+		labline3.setBounds(757, 36, 2, 60);
+		
 		Label lblDirectory = new Label(composite, SWT.NONE);
-		lblDirectory.setBounds(10, 10, 80, 15);
+		lblDirectory.setFont(SWTResourceManager.getFont("Corbel", 14, SWT.NORMAL));
+		lblDirectory.setBounds(10, 5, 80, 20);
 		lblDirectory.setText("Directory");
 
 		txtDir = new Text(composite, SWT.BORDER | SWT.WRAP);
-		txtDir.setBounds(90, 10, 400, 20);
+		txtDir.setFont(SWTResourceManager.getFont("Gill Sans MT", 12, SWT.NORMAL));
+		txtDir.setBounds(100, 4, 390, 25);
 		txtDir.setText("C:\\");
 
 		Label lblFileName = new Label(composite, SWT.NONE);
-		lblFileName.setBounds(10, 34, 55, 15);
+		lblFileName.setFont(SWTResourceManager.getFont("Corbel", 14, SWT.NORMAL));
+		lblFileName.setBounds(10, 30, 75, 21);
 		lblFileName.setText("File name");
 
 		txtName = new Text(composite, SWT.BORDER);
-		txtName.setBounds(90, 35, 400, 20);
+		txtName.setFont(SWTResourceManager.getFont("Gill Sans MT", 12, SWT.NORMAL));
+		txtName.setBounds(100, 30, 390, 25);
 		txtName.setText(".log");
 
 		Label lblSearchText = new Label(composite, SWT.NONE);
-		lblSearchText.setBounds(10, 60, 80, 15);
+		lblSearchText.setFont(SWTResourceManager.getFont("Corbel", 14, SWT.NORMAL));
+		lblSearchText.setBounds(5, 57, 93, 29);
 		lblSearchText.setText("Search text");
 
 		txtText = new Text(composite, SWT.BORDER);
-		txtText.setBounds(90, 60, 400, 20);
+		txtText.setFont(SWTResourceManager.getFont("Gill Sans MT", 12, SWT.NORMAL));
+		txtText.setBounds(100, 57, 390, 25);
 
 		Button btnSearch = new Button(composite, SWT.NONE | SWT.WRAP);
-		btnSearch.setBounds(530, 10, 75, 25);
+		btnSearch.setFont(SWTResourceManager.getFont("Corbel", 12, SWT.NORMAL));
 		btnSearch.setText("Search");
+		btnSearch.setBounds(549, 5, 75, 25);
 		btnSearch.addListener(SWT.Selection, new Listener() {
 			@Override
 			public void handleEvent(Event event) {
 				String searchText = txtText.getText();
 				String dirPath = txtDir.getText();
+				if (txtText.getText() == "") {
+					return;
+				}
 				tree.removeAll();
-
+				long time1 = System.currentTimeMillis();
 				try (Stream<Path> paths = Files.walk(Paths.get(dirPath))) {
 					paths.filter(p -> p.toString().endsWith(txtName.getText())).forEach(path -> {
 						try {
@@ -190,34 +280,53 @@ public class Application {
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
+				long time2 = System.currentTimeMillis();
+				txtTimer.setText((time2 - time1) + " ms");
 			}
 		});
 
 		Button btnClear = new Button(composite, SWT.NONE);
-		btnClear.setBounds(630, 10, 75, 25);
+		btnClear.setFont(SWTResourceManager.getFont("Corbel", 12, SWT.NORMAL));
+		btnClear.setBounds(629, 5, 75, 25);
 		btnClear.setText("Clear");
 		btnClear.addSelectionListener(new SelectionAdapter() {
 
 			@Override
 			public void widgetSelected(SelectionEvent e) {
+				TreeItem item = (TreeItem) e.item;
+				TreeItem[] items = tree.getItems();
+				for (int i = 0; i < items.length; i++) {
+					tree.removeAll();
+				}
+				getRootPath(tree);
+				styledText.setText("");
+				txtDir.setText("C:\\");
+				txtName.setText(".log");
+				txtText.setText("");
 			}
 		});
 
 		Button btnNext = new Button(composite, SWT.NONE);
-		btnNext.setBounds(500, 55, 75, 25);
+		btnNext.setFont(SWTResourceManager.getFont("Corbel", 12, SWT.NORMAL));
 		btnNext.setText("Next");
+		btnNext.setBounds(660, 60, 75, 25);
 		btnNext.setSelection(true);
 		btnNext.addListener(SWT.Selection, new Listener() {
 
 			@Override
 			public void handleEvent(Event event) {
-				selected++;
-				selected = highLighting(styledText, txtText.getText(), selected);
+				if (selected >= listOfCords.size() - 1) {
+					selected = -1;
+				} else {
+					selected++;
+					selected = highLighting(styledText, txtText.getText(), selected);
+				}
 			}
 		});
 
 		Button btnAll = new Button(composite, SWT.NONE);
-		btnAll.setBounds(580, 55, 75, 25);
+		btnAll.setFont(SWTResourceManager.getFont("Corbel", 12, SWT.NORMAL));
+		btnAll.setBounds(580, 60, 75, 25);
 		btnAll.setText("All");
 		btnAll.addListener(SWT.Selection, new Listener() {
 
@@ -229,35 +338,38 @@ public class Application {
 		});
 
 		Button btnPrevious = new Button(composite, SWT.NONE);
-		btnPrevious.setBounds(660, 55, 75, 25);
+		btnPrevious.setFont(SWTResourceManager.getFont("Corbel", 12, SWT.NORMAL));
 		btnPrevious.setText("Previous");
+		btnPrevious.setBounds(499, 60, 75, 25);
 		btnPrevious.addListener(SWT.Selection, new Listener() {
 
 			@Override
 			public void handleEvent(Event event) {
-				selected--;
-				selected = highLighting(styledText, txtText.getText(), selected);
+				if (selected == 0) {
+					selected = listOfCords.size();
+				} else {
+					selected--;
+					selected = highLighting(styledText, txtText.getText(), selected);
+				}
 			}
 		});
 
-		Label lblWarningFileWill = new Label(composite, SWT.NONE);
-		lblWarningFileWill.setBounds(10, 481, 303, 15);
-		lblWarningFileWill.setText("Warning! File will open only if you double clicked on it.");
-
 		txtTimer = new Text(composite, SWT.READ_ONLY);
-		txtTimer.setBounds(579, 481, 156, 18);
-		
+		txtTimer.setFont(SWTResourceManager.getFont("Gill Sans MT", 12, SWT.NORMAL));
+		txtTimer.setBounds(579, 479, 156, 20);
+
 		Label lblSearchTime = new Label(composite, SWT.NONE);
-		lblSearchTime.setBounds(513, 481, 75, 15);
+		lblSearchTime.setFont(SWTResourceManager.getFont("Corbel", 14, SWT.NORMAL));
+		lblSearchTime.setBounds(487, 479, 101, 20);
 		lblSearchTime.setText("Search time:");
-		
+
 		// -----------------Output area init------------------------------------------
 		styledText = new StyledText(composite,
 				SWT.MULTI | SWT.READ_ONLY | SWT.WRAP | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
-		styledText.setLocation(300, 95);
-		styledText.setSize(450, 380);
+		styledText.setLocation(301, 95);
+		styledText.setSize(458, 380);
 		styledText.setLayoutData(gridData);
-		
+
 		styledText.addLineStyleListener(new LineStyleListener() {
 			public void lineGetStyle(LineStyleEvent event) {
 				if (keyword == null || keyword.length() == 0) {
@@ -307,63 +419,51 @@ public class Application {
 				Display.getDefault().asyncExec(new Runnable() {
 					@Override
 					public void run() {
+						selected = 0;
 						TreeItem item = (TreeItem) e.item;
 						File file = (File) item.getData();
 						String searchText = txtText.getText();
+						long time1 = System.currentTimeMillis();
 
 						if (file.isDirectory()) {
 							return;
 						}
-						long time1 = System.currentTimeMillis();
-						try (RandomAccessFile reader = new RandomAccessFile(file, "r");
-								FileChannel channel = reader.getChannel();
-								ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-
-							int bufferSize = 1024;
-							if (bufferSize > channel.size()) {
-								bufferSize = (int) channel.size();
-							}
-
-							ByteBuffer buff = ByteBuffer.allocate(bufferSize);
-
-							while (channel.read(buff) > 0) {
-								buff.flip();
-								out.write(buff.array());
-								buff.clear();
-							}
-
-							String fileContent = new String(out.toByteArray(), StandardCharsets.UTF_8);
-							styledText.setText(fileContent);
-
-							if (searchText == "") {
-								return;
-							}
-							if (listOfCords.size() > 0) {
-								selected = 0;
-								listOfCords.clear();
-							}
-							if (fileContent.contains(searchText)) {
-
-								styledText.getText();
-								Matcher m = Pattern.compile(searchText + "\\b").matcher(fileContent);
-
-								while (m.find()) {
-									listOfCords.add(m.start());
-								}
-								styledText.setSelection(listOfCords.get(selected),
-										listOfCords.get(selected) + searchText.length());
-
-							}
-						} catch (FileNotFoundException e1) {
-							// TODO Auto-generated catch block
-							e1.printStackTrace();
+						try {
+							styledText.setText(getFileContent(file));
 						} catch (IOException e2) {
 							// TODO Auto-generated catch block
 							e2.printStackTrace();
 						}
+						if (searchText == "") {
+							return;
+						}
+						if (listOfCords.size() > 0) {
+							selected = 0;
+							listOfCords.clear();
+						} else {
+							String fileContent;
+							try {
+								fileContent = getFileContent(file);
+								if (fileContent.contains(searchText)) {
+
+									Matcher m = Pattern.compile(searchText + "\\b").matcher(fileContent);
+
+									while (m.find()) {
+										listOfCords.add(m.start());
+									}
+									styledText.setSelection(listOfCords.get(selected),
+											listOfCords.get(selected) + searchText.length());
+
+								}
+							} catch (IOException e1) {
+								// TODO Auto-generated catch block
+								e1.printStackTrace();
+							}
+						}
 						long time2 = System.currentTimeMillis();
 						txtTimer.setText((time2 - time1) + " ms");
 					}
+
 				});
 			}
 		});
@@ -375,7 +475,6 @@ public class Application {
 					return;
 				final File root = (File) item.getData();
 				txtDir.getText();
-				txtDir.setText(root.getPath());
 				txtDir.setText(root.getPath());
 			}
 		});
@@ -395,7 +494,5 @@ public class Application {
 	 * @param args
 	 * @return
 	 */
-	public static void main(String[] args) throws IOException {
-		new Application();
-	}
+	public static void main(String[] args) throws IOException {new Application();}
 }
