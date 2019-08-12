@@ -307,7 +307,6 @@ public class Application {
 				Display.getDefault().asyncExec(new Runnable() {
 					@Override
 					public void run() {
-						//listOfCords.clear();
 						TreeItem item = (TreeItem) e.item;
 						File file = (File) item.getData();
 						String searchText = txtText.getText();
@@ -355,8 +354,6 @@ public class Application {
 										listOfCords.get(selected) + searchText.length());
 
 							}
-							// System.out.println(listOfCords);
-
 						} catch (FileNotFoundException e1) {
 							// TODO Auto-generated catch block
 							e1.printStackTrace();
@@ -364,10 +361,8 @@ public class Application {
 							// TODO Auto-generated catch block
 							e2.printStackTrace();
 						}
-						// styledText.setText(fileContent);
 						long time2 = System.currentTimeMillis();
 						txtTimer.setText((time2 - time1) + " ms");
-						// System.out.println("Time taken: " + (time2 - time1) + " ms");
 					}
 				});
 			}
