@@ -43,7 +43,6 @@ public class Application {
 	public Tree tree;
 	public Composite composite;
 	public CTabFolder tabFolder;
-	public Button btnSearch;
 
 	/**
 	 * Builds the new column viewer instance.
@@ -198,8 +197,7 @@ public class Application {
 		// filling-------------------------------------------
 		getRootPath(tree);
 
-		// -----------------Buttons and labels
-		// init------------------------------------------
+		// -----------------Buttons and labels init------------------------------------------
 		Label lblHighlighting = new Label(composite, SWT.CENTER);
 		lblHighlighting.setFont(SWTResourceManager.getFont("Corbel", 12, SWT.NORMAL));
 		lblHighlighting.setBounds(503, 37, 232, 19);
@@ -253,6 +251,7 @@ public class Application {
 				if (txtText.getText() == "") {
 					return;
 				}
+				
 				tree.removeAll();
 				long time1 = System.currentTimeMillis();
 				try (Stream<Path> paths = Files.walk(Paths.get(dirPath))) {
